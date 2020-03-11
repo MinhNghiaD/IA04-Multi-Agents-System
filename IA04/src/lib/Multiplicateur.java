@@ -23,6 +23,17 @@ public class Multiplicateur extends Agent
 				
 				int command = Integer.parseInt(msg.getContent());
 				
+				try
+				{
+					// wait
+					Thread.sleep(500 + (long)(Math.random() * (10000 - 500)));
+				}
+				
+				catch(InterruptedException e)
+				{
+					System.out.println(e);
+				}  
+				
 				//construct message type INFORM
 				ACLMessage result = new ACLMessage(ACLMessage.INFORM);
 				

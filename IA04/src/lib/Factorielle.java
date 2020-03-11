@@ -9,6 +9,7 @@ import jade.domain.FIPAAgentManagement.DFAgentDescription;
 import jade.domain.FIPAAgentManagement.ServiceDescription;
 import jade.domain.DFService;
 import jade.domain.FIPAException;
+import java.util.*;
 
 public class Factorielle extends Agent 
 {
@@ -25,19 +26,22 @@ public class Factorielle extends Agent
 			 {
 				 ACLMessage forwardMessage = new ACLMessage(ACLMessage.REQUEST);
 				
-				 AID receiver = getReceiver();
-				 if (receiver != null) 
+				 List<AID> receivers = getReceivers();
+				 if (receivers.size() != 0) 
 				 {
-					 forwardMessage.addReceiver(receiver);
-					 
-					 forwardMessage.setConversationId("factorielle");
-					 String mirt = "rqt" + System.currentTimeMillis();
-					 
-					 
-					 forwardMessage.setContent(msg.getContent());
-					 forwardMessage.setReplyWith(mirt);
-					 
-					 send(forwardMessage);
+					 for (int i = 0; i < receivers.size(); ++i)
+					 {
+						 forwardMessage.addReceiver(receivers.get(i));
+						 
+						 forwardMessage.setConversationId("factorielle");
+						 String mirt = "rqt" + System.currentTimeMillis();
+						 
+						 
+						 forwardMessage.setContent(msg.getContent());
+						 forwardMessage.setReplyWith(mirt);
+						 
+						 send(forwardMessage);
+					 }
 				 }
 				 else
 				 {
@@ -60,6 +64,16 @@ public class Factorielle extends Agent
 			{
 				//show result 
 				System.out.println( "Result: " + msg.getContent());
+				
+				//return result to customer
+				ACLMessage result = new ACLMessage(ACLMessage.INFORM);
+				
+				result.addReceiver(msg.getSender());
+				
+				result.setContent(msg.getContent());
+					 
+				//Return result to Factorielle
+				send(result);
 			}
 		}
 	}
@@ -89,9 +103,9 @@ public class Factorielle extends Agent
 		//addBehaviour(new Debug());
 	}
 	
-	private AID getReceiver() 
+	private List<AID> getReceivers() 
 	{
-		AID rec = null;
+		List<AID> list = new ArrayList<AID>();
 		
 		DFAgentDescription template = new DFAgentDescription();
 		
@@ -105,16 +119,17 @@ public class Factorielle extends Agent
 		{
 			DFAgentDescription[] result = DFService.search(this, template);
 			
-			if (result.length > 0)
+			for (int i =0; i < result.length; ++i)
 			{
-				rec = result[0].getName();
+				list.add(result[i].getName());
 			}
+			
 		} catch(FIPAException fe) 
 		{
 			fe.printStackTrace();
 		}
 		
-		return rec;
+		return list;
 	 }
 	
 }
