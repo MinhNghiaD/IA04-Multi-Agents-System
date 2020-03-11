@@ -1,0 +1,8 @@
+main=false
+gui=false
+container-name = tdtp
+#host = 192.168.66.20
+#port of main container
+port=7777	
+#port of secondary containers
+local-port=5555
