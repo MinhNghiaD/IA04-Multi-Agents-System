@@ -26,7 +26,8 @@ public class HelloMain {
 			AgentController factorielle = firstContainer.createNewAgent("Factorielle", "lib.Factorielle", null);
 			
 			//create second secondary container
-			ContainerController secondContainer = rt.createAgentContainer(p2);
+			// ContainerController secondContainer = rt.createAgentContainer(p2);
+			ContainerController secondContainer = firstContainer;
 
 			//AgentController hello2         = secondContainer.createNewAgent("HelloWorld2", "lib.HelloWorld", null);
 		

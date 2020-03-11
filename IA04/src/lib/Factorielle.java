@@ -72,8 +72,8 @@ public class Factorielle extends Agent
 	{
 		System.out.println("Agent factorielle init!");
 		
-		//addBehaviour(new RequestHandler());
-		//addBehaviour(new ResultHandler());
-		addBehaviour(new Debug());
+		addBehaviour(new RequestHandler());
+		addBehaviour(new ResultHandler());
+		//addBehaviour(new Debug());
 	}
 }

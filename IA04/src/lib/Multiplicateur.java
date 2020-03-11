@@ -4,7 +4,7 @@ import jade.core.Agent;
 import jade.core.behaviours.Behaviour;
 import jade.core.behaviours.CyclicBehaviour;
 import jade.lang.acl.ACLMessage;
-import lib.Factorielle.Receiver;
+// import lib.Factorielle.Receiver;
 
 public class Multiplicateur extends Agent  
 {
