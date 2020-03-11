@@ -4,6 +4,7 @@ import jade.core.Agent;
 import jade.core.behaviours.CyclicBehaviour;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
+import lib.HelloWorld.HelloWorldBehaviour;
 
 public class Factorielle extends Agent 
 {
@@ -18,36 +19,61 @@ public class Factorielle extends Agent
 				 
 			 if (msg != null) 
 			 {
-				 if (msg.getPerformative() == ACLMessage.REQUEST)
-				{
-					ACLMessage forwardMessage = new ACLMessage(ACLMessage.REQUEST);
-					
-					
-					//forward request to multiplicateur
-					msg.setSender(new AID("Factorielle", AID.ISLOCALNAME));
-					
-					msg.clearAllReceiver();
-					msg.addReceiver(new AID("Multiplicateur", AID.ISLOCALNAME));
-					
-					send(msg);
-				}
-				else if (msg.getPerformative() == jade.lang.acl.ACLMessage.INFORM)
-				{
-					//show result 
-					System.out.println( "Result: " + msg.getContent());
-				}
-				else
-				{
-					System.out.println( "Drop massage : " + msg.getContent());
-				}
+				 ACLMessage forwardMessage = new ACLMessage(ACLMessage.REQUEST);
+					 
+				 forwardMessage.addReceiver(new AID("Multiplicateur", AID.ISLOCALNAME));
+				 
+				 forwardMessage.setConversationId("factorielle");
+				 String mirt = "rqt" + System.currentTimeMillis();
+				 
+				 
+				 forwardMessage.setContent(msg.getContent());
+				 forwardMessage.setReplyWith(mirt);
+				 
+				 send(forwardMessage);
+			 }
+		}
+	}
+	
+	protected class ResultHandler extends CyclicBehaviour
+	{
+		public void action()
+		{
+			//receive only INFORM message
+			MessageTemplate msgTemplate = MessageTemplate.MatchPerformative(ACLMessage.INFORM);
+			
+			ACLMessage msg = receive(msgTemplate);
+			
+			if (msg != null)
+			{
+				//show result 
+				System.out.println( "Result: " + msg.getContent());
 			}
 		}
 	}
 	
-	protected void setup() 
+	protected class Debug extends CyclicBehaviour
+	{
+		public void action()
+		{
+			//receive every message
+			
+			ACLMessage msg = receive();
+			
+			if (msg != null)
+			{
+				//show result 
+				System.out.println( "Result: " + msg.getContent());
+			}
+		}
+	}
+	
+	public void setup() 
 	{
 		System.out.println("Agent factorielle init!");
 		
-		addBehaviour(new RequestHandler());
+		//addBehaviour(new RequestHandler());
+		//addBehaviour(new ResultHandler());
+		addBehaviour(new Debug());
 	}
 }

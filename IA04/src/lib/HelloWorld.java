@@ -20,7 +20,7 @@ public class HelloWorld extends Agent
 		 }
 	}
 	
-	protected void setup() 
+	public void setup() 
 	{
 		System.out.println("Hello world!");
 		

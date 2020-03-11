@@ -25,7 +25,7 @@ public class Multiplicateur extends Agent
 				
 				result.addReceiver(msg.getSender());
 				
-				int f = factorielle(command);
+				long f = factorielle(command);
 				
 				System.out.println(f);
 				
@@ -37,14 +37,14 @@ public class Multiplicateur extends Agent
 		 }
 	}
 	
-	protected void setup() 
+	public void setup() 
 	{
 		System.out.println("Agent Multiplicateur init!");
 		
 		addBehaviour(new Receiver());
 	}
 	
-	private int factorielle(int x)
+	private long factorielle(int x)
 	{
 		if (x == 1 || x == 0)
 		{
