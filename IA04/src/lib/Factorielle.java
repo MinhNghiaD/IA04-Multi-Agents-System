@@ -5,6 +5,10 @@ import jade.core.behaviours.CyclicBehaviour;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
 import lib.HelloWorld.HelloWorldBehaviour;
+import jade.domain.FIPAAgentManagement.DFAgentDescription;
+import jade.domain.FIPAAgentManagement.ServiceDescription;
+import jade.domain.DFService;
+import jade.domain.FIPAException;
 
 public class Factorielle extends Agent 
 {
@@ -20,17 +24,25 @@ public class Factorielle extends Agent
 			 if (msg != null) 
 			 {
 				 ACLMessage forwardMessage = new ACLMessage(ACLMessage.REQUEST);
+				
+				 AID receiver = getReceiver();
+				 if (receiver != null) 
+				 {
+					 forwardMessage.addReceiver(receiver);
 					 
-				 forwardMessage.addReceiver(new AID("Multiplicateur", AID.ISLOCALNAME));
-				 
-				 forwardMessage.setConversationId("factorielle");
-				 String mirt = "rqt" + System.currentTimeMillis();
-				 
-				 
-				 forwardMessage.setContent(msg.getContent());
-				 forwardMessage.setReplyWith(mirt);
-				 
-				 send(forwardMessage);
+					 forwardMessage.setConversationId("factorielle");
+					 String mirt = "rqt" + System.currentTimeMillis();
+					 
+					 
+					 forwardMessage.setContent(msg.getContent());
+					 forwardMessage.setReplyWith(mirt);
+					 
+					 send(forwardMessage);
+				 }
+				 else
+				 {
+					 System.out.println("Cannot find receiver!");
+				 }
 			 }
 		}
 	}
@@ -68,7 +80,7 @@ public class Factorielle extends Agent
 		}
 	}
 	
-	public void setup() 
+	protected void setup() 
 	{
 		System.out.println("Agent factorielle init!");
 		
@@ -76,4 +88,33 @@ public class Factorielle extends Agent
 		addBehaviour(new ResultHandler());
 		//addBehaviour(new Debug());
 	}
+	
+	private AID getReceiver() 
+	{
+		AID rec = null;
+		
+		DFAgentDescription template = new DFAgentDescription();
+		
+		ServiceDescription service  = new ServiceDescription();
+		service.setType("Operations");
+		service.setName("Multiplication");
+		
+		template.addServices(service);
+		
+		try 
+		{
+			DFAgentDescription[] result = DFService.search(this, template);
+			
+			if (result.length > 0)
+			{
+				rec = result[0].getName();
+			}
+		} catch(FIPAException fe) 
+		{
+			fe.printStackTrace();
+		}
+		
+		return rec;
+	 }
+	
 }

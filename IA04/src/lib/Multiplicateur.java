@@ -4,7 +4,10 @@ import jade.core.Agent;
 import jade.core.behaviours.Behaviour;
 import jade.core.behaviours.CyclicBehaviour;
 import jade.lang.acl.ACLMessage;
-// import lib.Factorielle.Receiver;
+import jade.domain.FIPAAgentManagement.DFAgentDescription;
+import jade.domain.FIPAAgentManagement.ServiceDescription;
+import jade.domain.DFService;
+import jade.domain.FIPAException;
 
 public class Multiplicateur extends Agent  
 {
@@ -37,11 +40,28 @@ public class Multiplicateur extends Agent
 		 }
 	}
 	
-	public void setup() 
+	protected void setup() 
 	{
 		System.out.println("Agent Multiplicateur init!");
-		
+	
 		addBehaviour(new Receiver());
+		
+		DFAgentDescription agentDescription = new DFAgentDescription();
+		agentDescription.setName(getAID());
+		
+		ServiceDescription serviceDescription = new ServiceDescription();
+		serviceDescription.setType("Operations");
+		serviceDescription.setName("Multiplication");
+		
+		agentDescription.addServices(serviceDescription);
+		try 
+		{
+			DFService.register(this, agentDescription);
+		}
+		catch (FIPAException fe) 
+		{
+			fe.printStackTrace();
+		}
 	}
 	
 	private long factorielle(int x)

@@ -27,16 +27,17 @@ public class HelloMain {
 			
 			//create second secondary container
 			// ContainerController secondContainer = rt.createAgentContainer(p2);
-			ContainerController secondContainer = firstContainer;
-
+			
 			//AgentController hello2         = secondContainer.createNewAgent("HelloWorld2", "lib.HelloWorld", null);
 		
-			AgentController multiplicateur = secondContainer.createNewAgent("Multiplicateur", "lib.Multiplicateur", null);
-		
+			AgentController multiplicateur1 = firstContainer.createNewAgent("Multiplicateur1", "lib.Multiplicateur", null);
+			AgentController multiplicateur2 = firstContainer.createNewAgent("Multiplicateur2", "lib.Multiplicateur", null);
+			
 			//hello1.start();
 			factorielle.start();
 			//hello2.start();
-			multiplicateur.start();
+			multiplicateur1.start();
+			multiplicateur2.start();
 
 		} catch (Exception ex) 
 		{
