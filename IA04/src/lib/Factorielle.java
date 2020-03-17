@@ -21,6 +21,7 @@ public class Factorielle extends Agent
 			 MessageTemplate msgTemplate = MessageTemplate.MatchPerformative(ACLMessage.REQUEST);
 			 
 			 ACLMessage msg = receive(msgTemplate);
+			 
 				 
 			 if (msg != null) 
 			 {
@@ -37,7 +38,17 @@ public class Factorielle extends Agent
 						 String mirt = "rqt" + System.currentTimeMillis();
 						 
 						 
-						 forwardMessage.setContent(msg.getContent());
+						 //---------------Request String to JSON------------------//
+						 int msgVal = Integer.parseInt(msg.getContent());
+						 OperationResult oResult = new OperationResult(msgVal,""); 
+						 String msgJSON = oResult.toJson();
+						 System.out.println("Request factorielle receives : " + msg.getContent());
+						 System.out.println("Request JSON : " + msgJSON);
+						 forwardMessage.setContent(msgJSON);
+						//---------------END Request String to JSON---------------//
+						 
+						 
+						 //forwardMessage.setContent(msg.getContent());
 						 forwardMessage.setReplyWith(mirt);
 						 
 						 send(forwardMessage);
