@@ -37,6 +37,15 @@ public class OperationResult
 		time = System.currentTimeMillis();
 	}
 	
+	public String getComment()
+	{
+		return this.comment;
+	}
+	
+	public int getValue()
+	{
+		return this.value;
+	}
 	
 	private int value;
 	private String comment;
