@@ -8,10 +8,10 @@ public class OperationResult
 {
 	OperationResult(int val, String cmt)
 	{
-		value    = v;
-		comment  = c;
+		value    = val;
+		comment  = cmt;
 	}
-	
+
 	public String toJson()
 	{
 		ObjectMapper mapper = new ObjectMapper();
