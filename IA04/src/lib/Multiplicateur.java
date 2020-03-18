@@ -1,9 +1,9 @@
 package lib;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import jade.core.AID;
 import jade.core.Agent;
-import jade.core.behaviours.Behaviour;
 import jade.core.behaviours.CyclicBehaviour;
 import jade.lang.acl.ACLMessage;
 import jade.domain.FIPAAgentManagement.DFAgentDescription;
@@ -14,24 +14,7 @@ import jade.domain.FIPAException;
 public class Multiplicateur extends Agent  
 {
 	protected class Receiver extends CyclicBehaviour 
-	{
-		//---------------Request JSON to OR------------------//
-		public OperationResult decodeJSON(String msg)
-		{ 
-			ObjectMapper mapper = new ObjectMapper(); 
-			try {
-				OperationResult ort = mapper.readValue(msg, OperationResult.class);
-				System.out.println("cmt: " + ort.getComment());
-				return ort;
-				 // Utiliser ort
-			}catch(Exception ex) 
-			{
-				ex.printStackTrace();
-				return null;
-			}
-		}
-		//---------------END Request JSON to OR------------------//
-		
+	{	
 		 public void action() 
 		 {
 			ACLMessage msg = receive();
@@ -40,15 +23,17 @@ public class Multiplicateur extends Agent
 			{
 				System.out.println( "Multiplicateur receive: " + msg.getContent());
 				
-				
-				//---------------Request JSON to OR------------------//
-				try {
-				
-					OperationResult cmd = decodeJSON(msg.getContent());
-					int command = cmd.getValue();
-					//---------------END Request JSON to OR------------------//
+				try 
+				{
+					OperationResult data = OperationResult.read(msg.getContent());
 					
-					//int command = Integer.parseInt(msg.getContent());
+					if (data == null)
+					{
+						return;
+					}
+					
+					int command = data.getValue();
+					
 					try
 					{
 						// wait
@@ -73,13 +58,16 @@ public class Multiplicateur extends Agent
 						 
 					//Return result to Factorielle
 					send(result);
-				} catch (Exception e) {
+					
+				} catch (Exception e) 
+				{
 					// TODO: handle exception
 					System.out.println(e);
 				}
 				
-		 }
-	}}
+			}
+		}
+	}
 	
 	protected void setup() 
 	{
@@ -95,14 +83,14 @@ public class Multiplicateur extends Agent
 		serviceDescription.setName("Multiplication");
 		
 		agentDescription.addServices(serviceDescription);
-//		try 
-//		{
-//			DFService.register(this, agentDescription);
-//		}
-//		catch (FIPAException fe) 
-//		{
-//			fe.printStackTrace();
-//		}
+		try 
+		{
+			DFService.register(this, agentDescription);
+		}
+		catch (FIPAException fe) 
+		{
+			fe.printStackTrace();
+		}
 	}
 	
 	private long factorielle(int x)

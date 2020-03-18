@@ -1,17 +1,25 @@
 package lib;
 
 import java.io.IOException;
-import jade.core.AID;
+
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class OperationResult 
 {
-	OperationResult(int val, String cmt)
+	public OperationResult()
+	{
+		value    = 0;
+		comment  = "";
+	}
+	
+	public OperationResult(int val, String cmt)
 	{
 		value    = val;
 		comment  = cmt;
 	}
-	
+
 	public String toJson()
 	{
 		ObjectMapper mapper = new ObjectMapper();
@@ -27,15 +35,27 @@ public class OperationResult
 		return s;
 	}
 	
-	public void setCustomer(AID cust)
+	public static OperationResult read(String jsonString) 
 	{
-		customer = cust;
+		ObjectMapper mapper = new ObjectMapper();
+		OperationResult p = null;
+		
+		try {
+			p = mapper.readValue(jsonString, OperationResult.class);
+		} catch (JsonParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (JsonMappingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		return p;
 	}
 	
-	public void setTimeSend()
-	{
-		time = System.currentTimeMillis();
-	}
 	
 	public String getComment()
 	{
@@ -49,6 +69,4 @@ public class OperationResult
 	
 	private int value;
 	private String comment;
-	AID customer;
-	long time;
 }
