@@ -22,41 +22,45 @@ public class Factorielle extends Agent
 			 
 			 ACLMessage msg = receive(msgTemplate);
 			 
-				 
 			 if (msg != null) 
 			 {
-				 ACLMessage forwardMessage = new ACLMessage(ACLMessage.REQUEST);
-				
+				 System.out.println("Request factorielle receives : " + msg.getContent());
+				 
+				 int msgVal = Integer.parseInt(msg.getContent());
+				 
+				//---------------Request String to JSON------------------//
+				 
+				 OperationResult data = new OperationResult(msgVal, "Request number"); 
+				 String msgJSON = data.toJson();
+				 
+				 System.out.println("Encoded JSON : " + msgJSON);
+				//---------------END Request String to JSON---------------//
+				 
 				 List<AID> receivers = getReceivers();
+				 
 				 if (receivers.size() != 0) 
 				 {
+					 ACLMessage forwardMessage = new ACLMessage(ACLMessage.REQUEST);
+					 
+					 forwardMessage.setConversationId("factorielle");
+					 String mirt = "rqt" + System.currentTimeMillis();
+					 
+					 forwardMessage.setReplyWith(mirt);
+					 
+					 forwardMessage.setContent(msgJSON);
+					 
 					 for (int i = 0; i < receivers.size(); ++i)
 					 {
 						 forwardMessage.addReceiver(receivers.get(i));
-						 
-						 forwardMessage.setConversationId("factorielle");
-						 String mirt = "rqt" + System.currentTimeMillis();
-						 
-						 
-						 //---------------Request String to JSON------------------//
-						 int msgVal = Integer.parseInt(msg.getContent());
-						 OperationResult oResult = new OperationResult(msgVal,""); 
-						 String msgJSON = oResult.toJson();
-						 System.out.println("Request factorielle receives : " + msg.getContent());
-						 System.out.println("Request JSON : " + msgJSON);
-						 forwardMessage.setContent(msgJSON);
-						//---------------END Request String to JSON---------------//
-						 
-						 
-						 //forwardMessage.setContent(msg.getContent());
-						 forwardMessage.setReplyWith(mirt);
-						 
-						 send(forwardMessage);
+
+						 System.out.println("Send to agent : " + receivers.get(i) + "at " + System.currentTimeMillis());
 					 }
+					 
+					 send(forwardMessage);
 				 }
 				 else
 				 {
-					 System.out.println("Cannot find receiver!");
+					 System.out.println("Cannot find any receiver!");
 				 }
 			 }
 		}
