@@ -1,6 +1,8 @@
 package agents;
 
 import java.util.Date;
+
+import jade.core.AID;
 import jade.core.Agent;
 import jade.core.behaviours.CyclicBehaviour;
 import jade.core.behaviours.OneShotBehaviour;
@@ -25,7 +27,7 @@ public class MachineCafe extends Agent
 		m_dose 	   = (Integer) args[0];
 		m_capacity = m_dose;
 		
-		addBehaviour(new RequestHandler()); 
+		addBehaviour(new requestHandler()); 
 	}
 	
 	@Override
@@ -43,11 +45,11 @@ public class MachineCafe extends Agent
 	}
 	
 	/**
-	 * class RequestHandler hérité de CyclicBehaviour
-	 * Cette classe est en charge de la reception des message et les procéder
+	 * Classe requestHandler héritée de CyclicBehaviour
+	 * Cette classe est en charge de la réception des demandes du client et les traiter
 	 *
 	 */
-	private class RequestHandler extends CyclicBehaviour 
+	private class requestHandler extends CyclicBehaviour 
 	{
 		@Override
 		public void action() 
@@ -56,12 +58,11 @@ public class MachineCafe extends Agent
 			 
 			 ACLMessage msg = receive(msgTemplate);
 			 
-			 if (msg != null) 
+			 if (msg != null && msg.getContent().equals("1")) 
 			 {
 				 try 
 				 {
 					 processOrder(msg); 
-					 
 				 } 
 				 catch (Exception e) 
 				 {
@@ -76,13 +77,13 @@ public class MachineCafe extends Agent
 	}
 	
 	/**
-	 * Classe Recharge hérité de WakerBehaviour
+	 * Classe recharge héritée de WakerBehaviour
 	 * Elle va recharger les doses après un certain délai
 	 *
 	 */
-	private class Recharge extends WakerBehaviour
+	private class recharge extends WakerBehaviour
 	{	
-		public Recharge(Agent a, long timer) 
+		public recharge(Agent a, long timer) 
 		{
 			super(a, timer);
 		}
@@ -94,12 +95,17 @@ public class MachineCafe extends Agent
 		}
 	}
 	
-	// Traitement la demmande en répondrant un message positive ou négative
+
+	/**
+	 * Traitement la demmande 
+	 * en répondrant un message positive ou négative
+	 */
 	private void processOrder(ACLMessage message) 
 	{
 		int request = Integer.parseInt(message.getContent());
+		String sender = message.getSender().getLocalName();
 			 
-		System.out.println(getLocalName() + " Message reçu à " + new Date());
+		System.out.println(getLocalName() + " Message reçu la demande de " + sender + ".");
 			
 		ACLMessage reply = message.createReply();
 			
@@ -117,8 +123,10 @@ public class MachineCafe extends Agent
 				
 			if (m_dose == 0)
 			{
-				//recharger les doses 
-				addBehaviour(new Recharge(this, (500 + (long)(Math.random() * (10000 - 500)) ))); 
+				//Recharger les doses 
+				long timeout = 500 + (long)(Math.random() * (10000 - 500));
+				addBehaviour(new recharge(this, timeout)); 
+				System.out.println("\n" + getLocalName() + " : Recharger les doses dans " + timeout + " secondes. \n");
 			}
 		} 
 		else 
@@ -133,7 +141,7 @@ public class MachineCafe extends Agent
 	}
 	
 	/**
-	 * Inscrire le client a la page blanche
+	 * Inscrire la machine a la page blanche
 	 */
 	private void register() 
 	{

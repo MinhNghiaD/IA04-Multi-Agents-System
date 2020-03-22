@@ -15,6 +15,7 @@ import jade.domain.FIPAAgentManagement.ServiceDescription;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
 import jade.proto.AchieveREInitiator;
+import agents.MachineCafe;
 
 public class Client extends Agent 
 {	
@@ -26,13 +27,13 @@ public class Client extends Agent
 	{
 		register();
 		
-		System.out.println("Agent Client init!");	
+		System.out.println("Agent " + getLocalName() + " init!");	
 		
 		Object[] args = getArguments();
         
 		m_period = (Integer) args[0];
         
-		addBehaviour(new PlacerCommande(this, m_period)); 
+		addBehaviour(new commanderCafe(this, m_period)); 
 	}
 	
 	@Override
@@ -51,13 +52,13 @@ public class Client extends Agent
 	}
 	
 	/**
-	 * Classe PlacerCommande hérité de TickerBehaviour
-	 * Elle va placer la comamnde entre une période pré-définit dans le constructeur
+	 * Classe commanderCafe héritée de TickerBehaviour
+	 * Elle va renvoyer la demande après une période pré-définie
 	 *
 	 */
-	private class PlacerCommande extends TickerBehaviour 
+	private class commanderCafe extends TickerBehaviour 
 	{
-		public PlacerCommande(Agent agent, long period) 
+		public commanderCafe(Agent agent, long period) 
 		{
 			super(agent, period);
 		}
@@ -92,9 +93,9 @@ public class Client extends Agent
 			String mirt = "rqt" + System.currentTimeMillis();
 			msg.setReplyWith(mirt);
 			
-			send(msg);
+			System.out.println("\n" + getLocalName() + " envoie demande à " + new Date());
 			
-			System.out.println(getLocalName() + " envoie demande");
+			send(msg);		
 		}
 		
 		@Override
@@ -110,7 +111,7 @@ public class Client extends Agent
 	}
 	
 	/**
-	 * Inscrire client a la page blanche
+	 * Inscrire client a la page blanche pour avoir un AID valide
 	 */
 	private void register() 
 	{
