@@ -1,9 +1,0 @@
-package lib;
-import jade.core.Agent;
-import jade.core.behaviours.Behaviour;
-import jade.domain.introspection.ACLMessage;
-
-public class Multiplicateur extends Agent  
-{
-
-}

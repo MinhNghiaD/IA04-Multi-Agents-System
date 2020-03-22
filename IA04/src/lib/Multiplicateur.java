@@ -52,8 +52,6 @@ public class Multiplicateur extends Agent
 					
 					long f = factorielle(command);
 					
-					System.out.println(f);
-					
 					result.setContent(String.valueOf(f));
 						 
 					//Return result to Factorielle
