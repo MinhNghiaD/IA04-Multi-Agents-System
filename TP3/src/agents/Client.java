@@ -30,10 +30,18 @@ public class Client extends Agent
 		System.out.println("Agent " + getLocalName() + " init!");	
 		
 		Object[] args = getArguments();
+		
+		if (args.length != 2)
+		{
+			System.out.println("Faux Nombre d'arguments!");	
+			
+			return;
+		}
         
-		m_period = (Integer) args[0];
+		m_period 	   = (Integer) args[0];
+		m_doseCommande = (Integer) args[1];
         
-		addBehaviour(new commanderCafe(this, m_period)); 
+		addBehaviour(new CommanderCafe(this, m_period)); 
 	}
 	
 	@Override
@@ -56,9 +64,9 @@ public class Client extends Agent
 	 * Elle va renvoyer la demande après une période pré-définie
 	 *
 	 */
-	private class commanderCafe extends TickerBehaviour 
+	private class CommanderCafe extends TickerBehaviour 
 	{
-		public commanderCafe(Agent agent, long period) 
+		public CommanderCafe(Agent agent, long period) 
 		{
 			super(agent, period);
 		}
@@ -68,12 +76,25 @@ public class Client extends Agent
 		{	
 			ACLMessage message = new ACLMessage(ACLMessage.REQUEST);
 				
-			message.addReceiver(searchMachineCafe());
-				
-			message.setContent("1"); 
+			AID machineCafe = searchMachineCafe();
 			
-			// Essayer d'acheter un café
-			addBehaviour(new AcheterCafe(getAgent() , message));
+			if (machineCafe != null)
+			{
+				message.addReceiver(machineCafe);
+				
+				message.setContent(Integer.toString(m_doseCommande)); 
+				
+				String id = UUID.randomUUID().toString();
+				message.setConversationId(id);
+					
+				String mirt = "rqt" + System.currentTimeMillis();
+				message.setReplyWith(mirt);
+				
+				// Essayer d'acheter un café
+				addBehaviour(new AcheterCafe(getAgent() , message));
+				
+				System.out.println("\n" + getLocalName() + " envoie demande à " + new Date());
+			}
 		}
 	}
 	
@@ -86,22 +107,15 @@ public class Client extends Agent
 		AcheterCafe(Agent agent, ACLMessage msg)
 		{
 			super(agent, msg);
-			
-			String id = UUID.randomUUID().toString();
-			msg.setConversationId(id);
-				
-			String mirt = "rqt" + System.currentTimeMillis();
-			msg.setReplyWith(mirt);
-			
-			System.out.println("\n" + getLocalName() + " envoie demande à " + new Date());
-			
-			send(msg);		
 		}
 		
 		@Override
 		protected void handleInform(ACLMessage inform)
 		{
-			System.out.println(getLocalName() + " reçoit café!");	
+			if (MachineCafe.isInteger(inform.getContent()))
+			{
+				System.out.println(getLocalName() + " reçoit " + inform.getContent() + " café!");	
+			}
 		}
 		
 		protected void handleRefuse(ACLMessage refuse)
@@ -124,11 +138,13 @@ public class Client extends Agent
 		sd.setName(nameService);
 		
 		dfd.addServices(sd);
+	
 		try 
 		{
 			DFService.register(this, dfd);
 			
-		} catch (FIPAException fe) 
+		} 
+		catch (FIPAException fe) 
 		{
 			fe.printStackTrace();
 		}
@@ -176,4 +192,5 @@ public class Client extends Agent
 	static public String nameService 	  = "Client";
 	
 	private 	  int    m_period;
+	private 	  int	 m_doseCommande;
 }

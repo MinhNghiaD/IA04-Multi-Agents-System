@@ -16,6 +16,9 @@ import jade.lang.acl.MessageTemplate;
 
 public class MachineCafe extends Agent 
 {	
+	/**
+	 * setup agent avec un cyclic behaviour, qui attente et procéde les messages
+	 */
 	protected void setup() 
 	{
 		register();
@@ -24,12 +27,22 @@ public class MachineCafe extends Agent
 		
 		Object[] args = getArguments();
 		
-		m_dose 	   = (Integer) args[0];
-		m_capacity = m_dose;
+		if (args.length != 1)
+		{
+			System.out.println("Faux Nombre d'arguments!");	
+			
+			return;
+		}
 		
-		addBehaviour(new requestHandler()); 
+		m_dose 	   	  = (Integer) args[0];
+		m_capacity    = m_dose;
+		
+		addBehaviour(new RequestHandler()); 
 	}
 	
+	/**
+	 * Déinscrire sur la page blanche
+	 */
 	@Override
 	protected void takeDown() 
 	{
@@ -49,7 +62,7 @@ public class MachineCafe extends Agent
 	 * Cette classe est en charge de la réception des demandes du client et les traiter
 	 *
 	 */
-	private class requestHandler extends CyclicBehaviour 
+	private class RequestHandler extends CyclicBehaviour 
 	{
 		@Override
 		public void action() 
@@ -58,8 +71,8 @@ public class MachineCafe extends Agent
 			 
 			 ACLMessage msg = receive(msgTemplate);
 			 
-			 if (msg != null && msg.getContent().equals("1")) 
-			 {
+			 if (msg != null && isInteger(msg.getContent())) 
+			 { 
 				 try 
 				 {
 					 processOrder(msg); 
@@ -81,9 +94,9 @@ public class MachineCafe extends Agent
 	 * Elle va recharger les doses après un certain délai
 	 *
 	 */
-	private class recharge extends WakerBehaviour
+	private class Recharge extends WakerBehaviour
 	{	
-		public recharge(Agent a, long timer) 
+		public Recharge(Agent a, long timer) 
 		{
 			super(a, timer);
 		}
@@ -103,18 +116,26 @@ public class MachineCafe extends Agent
 	private void processOrder(ACLMessage message) 
 	{
 		int request = Integer.parseInt(message.getContent());
+		
 		String sender = message.getSender().getLocalName();
 			 
-		System.out.println(getLocalName() + " Message reçu la demande de " + sender + ".");
+		System.out.println(getLocalName() + 
+						   " reçoit la demande de " + 
+						   message.getContent() + 
+						   " de " + sender + ".");
 			
 		ACLMessage reply = message.createReply();
-			
-		if ( m_dose > 0 && m_dose >= request) 
+		
+		int cafes = Math.max(0, Math.min(request, m_dose));
+		
+		if (m_dose > 0 && cafes > 0) 
 		{ 
 			//Réponse positive
 			reply.setPerformative(ACLMessage.INFORM);
+			
+			reply.setContent(Integer.toString(cafes));
 				
-			decreaseDose(request);
+			decreaseDose(cafes);
 				
 			System.out.println(getLocalName() + 
 							   " : Demande a été enregistrée ! Nombre de doses restantes : " + 
@@ -125,16 +146,18 @@ public class MachineCafe extends Agent
 			{
 				//Recharger les doses 
 				long timeout = 500 + (long)(Math.random() * (10000 - 500));
-				addBehaviour(new recharge(this, timeout)); 
-				System.out.println("\n" + getLocalName() + " : Recharger les doses dans " + timeout + " secondes. \n");
+				addBehaviour(new Recharge(this, timeout)); 
+				
+				System.out.println("\n" + getLocalName() + " : Recharger le café dans " + timeout + " milisecondes. \n");
 			}
 		} 
 		else 
 		{ 
 			//Réponse négative
 			reply.setPerformative(ACLMessage.REFUSE);
+			reply.setContent("0");
 				
-			System.out.println(getLocalName() + " : Il n'y a pas assez de dose pour votre demande.");
+			System.out.println(getLocalName() + " : Il n'y a plus de café dans le machine.");
 		}
 
 		send(reply);
@@ -167,6 +190,41 @@ public class MachineCafe extends Agent
 	private void decreaseDose(int dose) 
 	{
 		this.m_dose -= dose;
+	}
+	
+	public static boolean isInteger(String s) 
+	{
+	    return isInteger(s,10);
+	}
+
+	public static boolean isInteger(String s, int radix) 
+	{
+	    if(s.isEmpty())
+	    {
+	    	return false;
+	    }
+	    
+	    for(int i = 0; i < s.length(); ++i) 
+	    {
+	        if(i == 0 && s.charAt(i) == '-') 
+	        {
+	            if(s.length() == 1) 
+	            {
+	            	return false;
+	            }
+	            else 
+	            {
+	            	continue;
+	            }
+	        }
+	        
+	        if(Character.digit(s.charAt(i), radix) < 0) 
+	        {
+	        	return false;
+	       	}
+	    }
+	    
+	    return true;
 	}
 	
 	static public String typeService = "Vendre";
