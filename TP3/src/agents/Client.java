@@ -114,7 +114,7 @@ public class Client extends Agent
 		{
 			if (MachineCafe.isInteger(inform.getContent()))
 			{
-				System.out.println(getLocalName() + " reçoit " + inform.getContent() + " café!");	
+				System.out.println(getLocalName() + " reçoit " + inform.getContent() + " café(s)!");	
 			}
 		}
 		

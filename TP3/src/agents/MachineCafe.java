@@ -122,7 +122,7 @@ public class MachineCafe extends Agent
 		System.out.println(getLocalName() + 
 						   " reçoit la demande de " + 
 						   message.getContent() + 
-						   " de " + sender + ".");
+						   " café(s) de " + sender + ".");
 			
 		ACLMessage reply = message.createReply();
 		
