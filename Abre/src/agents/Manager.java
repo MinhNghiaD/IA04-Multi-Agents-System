@@ -1,5 +1,6 @@
 package agents;
 
-public class Manager {
+public class Manager 
+{
 
 }

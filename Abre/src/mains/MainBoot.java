@@ -7,7 +7,8 @@ import jade.wrapper.AgentController;
 import jade.wrapper.ContainerController;
 import jade.core.Profile;
 
-public class MainBoot {
+public class MainBoot 
+{
 
 	public static void main(String[] args) 
 	{
