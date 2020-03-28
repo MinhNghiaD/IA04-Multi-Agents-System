@@ -19,8 +19,9 @@ import jade.proto.AchieveREInitiator;
 
 public class Node extends Agent
 {
-	/* 
+	/** 
 	 * Initialiser un agent
+	 * 
 	*/
 	protected void setup() 
 	{
@@ -86,8 +87,8 @@ public class Node extends Agent
 		}
 	}
 	
-	static public String typeService 	  = "Binary";
-	static public String nameService 	  = "Node";
+	static public String typeService = "Binary";
+	static public String nameService = "Node";
 	
 	private int m_value;
 	
