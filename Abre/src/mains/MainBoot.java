@@ -21,24 +21,9 @@ public class MainBoot
 			p = new ProfileImpl(MAIN_PROPERTIES_FILE);
 			AgentContainer mainContainer = rt.createMainContainer(p);
 
-			//Créer l'agent MachineCafe
-			Object[] initDose = {(Integer) 10};
-			//AgentController machine = mainContainer.createNewAgent("MachineCafe", "agents.MachineCafe", initDose);
-			
-			Object[] argsClient1 = {(Integer) 5000,  (Integer) 1};
-			Object[] argsClient2 = {(Integer) 8000,  (Integer) 1}; 
-			Object[] argsClient3 = {(Integer) 11000, (Integer) 1};
-			
-			//Créer les trois agents Client avec trois périodes différentes 
-			//AgentController client1 = mainContainer.createNewAgent("Client1", "agents.Client", argsClient1);
-			//AgentController client2 = mainContainer.createNewAgent("Client2", "agents.Client", argsClient2);
-			//AgentController client3 = mainContainer.createNewAgent("Client3", "agents.Client", argsClient3);
+			AgentController manager = mainContainer.createNewAgent("Manager", "agents.Manager", null);
 
-			//Démarrer des agents
-			//machine.start();
-			//client1.start();
-			//client2.start();
-			//client3.start();
+			manager.start();
 		}
 		catch(Exception ex) 
 		{

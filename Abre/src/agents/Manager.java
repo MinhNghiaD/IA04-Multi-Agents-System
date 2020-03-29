@@ -1,8 +1,11 @@
 package agents;
 
 import java.util.Date;
+import java.util.Map;
 import java.util.Random;
 import java.util.UUID;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import jade.core.AID;
 import jade.core.Agent;
@@ -18,6 +21,25 @@ import jade.proto.AchieveREInitiator;
 
 public class Manager extends Agent
 {
+	static public Map<String, Object> mapJson(String json)
+	{
+		Map<String, Object> map = null;
+		
+		ObjectMapper mapper = new ObjectMapper();
+		
+		try 
+		{
+			map = mapper.readValue(json, Map.class);
+		}
+		catch(Exception ex) 
+		{
+			ex.printStackTrace();
+		}
+		
+		return map;
+	}
+	
+	
 	/** 
 	 * Initialiser un agent
 	 * 
@@ -30,8 +52,9 @@ public class Manager extends Agent
 		
 		m_root 	   = null;
         
-		//ajoute les behaviours
+		addBehaviour(new RequestHandler());
 	}
+	
 	
 	@Override
 	protected void takeDown() 
@@ -52,7 +75,7 @@ public class Manager extends Agent
 	/**
 	 * Inscrire client a la page blanche pour avoir un AID valide
 	 */
-	private void register() 
+	protected void register() 
 	{
 		DFAgentDescription dfd = new DFAgentDescription();
 		dfd.setName(getAID());
@@ -72,6 +95,164 @@ public class Manager extends Agent
 		catch (FIPAException fe) 
 		{
 			fe.printStackTrace();
+		}
+	}
+	
+	/**
+	 * Classe requestHandler héritée de CyclicBehaviour
+	 * Cette classe est en charge de la réception des demandes du client et les traiter
+	 *
+	 */
+	private class RequestHandler extends CyclicBehaviour 
+	{
+		@Override
+		public void action() 
+		{
+			 MessageTemplate msgTemplate = MessageTemplate.MatchPerformative(ACLMessage.REQUEST);
+			 
+			 ACLMessage msg = receive(msgTemplate);
+			 
+			 if (msg != null) 
+			 { 
+				 try 
+				 {
+					 processRequest(msg); 
+				 } 
+				 catch (Exception e) 
+				 {
+					 System.out.println(getLocalName() + " : MESSAGE INVALIDE");
+				 } 
+			 }
+			 else
+			 {
+					block();
+			 }
+		 }
+	}
+	
+	private void processRequest(ACLMessage msg)
+	{
+		//déserialise Json à Map
+		Map<String, Object> map = mapJson(msg.getContent());
+		
+		if (map != null && map.containsKey("action"))
+		{
+			String action = (String) map.get("action");
+			
+			System.out.println(getName() + " receive request: " + action);
+			
+			switch (action)
+			{
+				case "inserer":
+					
+					if (map.containsKey("value"))
+					{
+						int value = (Integer) map.get("value");
+						
+						if (m_root == null)
+						{
+							addRoot(value);
+						}
+						else
+						{
+							request(msg.getContent());
+						}
+					}
+					else
+					{
+						System.out.println("Erreur: "  + getName() + 
+										   ": action " + action    + " ne contient pas de value.");
+					}
+					
+					break;
+					
+				case "presence":
+					if (m_root == null)
+					{
+						System.out.println("Erreur: "  + getName() + 
+								   ": action " + action    + ": root est null");
+					}
+					else
+					{
+						request(msg.getContent());
+					}
+					
+					break;
+					
+				case "affichage":
+					if (m_root == null)
+					{
+						System.out.println("Erreur: "  + getName() + 
+								   ": action " + action    + ": root est null");
+					}
+					else
+					{
+						request(msg.getContent());
+					}
+					
+					break;
+					
+				default:
+					System.out.println(getName() + ": action " + action + " n'est pas disponible!");
+			}
+			
+		}
+	}
+	
+	private void addRoot(int value)
+	{
+		Object[] arg = {(Integer) value};
+		
+		try
+		{
+			getContainerController().createNewAgent("root", "agents.Node", arg).start();
+			
+			m_root = new AID("root", AID.ISLOCALNAME);
+			
+			System.out.println(getLocalName() + ": Noeud est bien ajouté");	
+		}
+		catch(Exception ex)
+		{
+			ex.printStackTrace();
+		}
+	}
+
+	private void request(String json)
+	{
+		ACLMessage message = new ACLMessage(ACLMessage.REQUEST);
+			
+		message.addReceiver(m_root);
+		
+		String id = UUID.randomUUID().toString();
+		message.setConversationId(id);
+		
+		String mirt = "rqt" + System.currentTimeMillis();
+		message.setReplyWith(mirt);
+		
+		message.setContent(json);
+			
+		addBehaviour(new SendRequest(this, message));
+
+		System.out.println(getLocalName() + " envoie demande d'insérer noeud à " + new Date());
+	}
+	
+	private class SendRequest extends AchieveREInitiator
+	{
+		SendRequest(Agent agent, ACLMessage msg)
+		{
+			super(agent, msg);
+		}
+		
+		@Override
+		protected void handleInform(ACLMessage inform)
+		{
+			System.out.println(getLocalName() + ": " + inform.getContent());	
+		}
+		
+		@Override
+		protected void handleRefuse(ACLMessage refuse)
+		{
+			System.out.println(getLocalName() + ": " + refuse.getContent());
 		}
 	}
 	

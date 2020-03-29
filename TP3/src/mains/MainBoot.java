@@ -25,8 +25,8 @@ public class MainBoot {
 			AgentController machine = mainContainer.createNewAgent("MachineCafe", "agents.MachineCafe", initDose);
 			
 			Object[] argsClient1 = {(Integer) 5000,  (Integer) 1};
-			Object[] argsClient2 = {(Integer) 8000,  (Integer) 2}; 
-			Object[] argsClient3 = {(Integer) 11000, (Integer) 3};
+			Object[] argsClient2 = {(Integer) 8000,  (Integer) 1}; 
+			Object[] argsClient3 = {(Integer) 11000, (Integer) 1};
 			
 			//Créer les trois agents Client avec trois périodes différentes 
 			AgentController client1 = mainContainer.createNewAgent("Client1", "agents.Client", argsClient1);

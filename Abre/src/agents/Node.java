@@ -8,6 +8,7 @@ import java.util.UUID;
 import jade.core.AID;
 import jade.core.Agent;
 import jade.core.behaviours.CyclicBehaviour;
+import jade.core.behaviours.OneShotBehaviour;
 import jade.core.behaviours.TickerBehaviour;
 import jade.domain.DFService;
 import jade.domain.FIPAException;
@@ -60,11 +61,11 @@ public class Node extends Agent
 		}
 	}
 	
-	
+
 	/**
 	 * Inscrire client a la page blanche pour avoir un AID valide
 	 */
-	private void register() 
+	protected void register() 
 	{
 		DFAgentDescription dfd = new DFAgentDescription();
 		dfd.setName(getAID());
@@ -86,6 +87,46 @@ public class Node extends Agent
 			fe.printStackTrace();
 		}
 	}
+	
+	/**
+	 * AddNode behaviour: ajouter le nouveau node en précisant son nom et sa value
+	 */
+	private class AddNode extends OneShotBehaviour
+	{
+		public AddNode(Agent a, int value, String nodeName)
+		{
+			super(a);
+			
+			m_value    = value;
+			m_nodeName = nodeName;
+		}
+		
+		@Override
+		public void action() 
+		{
+			Object[] arg = {(Integer) m_value};
+			
+			try
+			{
+				getContainerController().createNewAgent(m_nodeName, "agents.Node", arg).start();
+			}
+			catch(Exception ex)
+			{
+				ex.printStackTrace();
+			}
+		}
+		
+		private int    m_value;
+		private String m_nodeName;
+	}
+	
+	
+	private void addNewNode(int value)
+	{
+		
+	}
+	
+	
 	
 	static public String typeService = "Binary";
 	static public String nameService = "Node";
