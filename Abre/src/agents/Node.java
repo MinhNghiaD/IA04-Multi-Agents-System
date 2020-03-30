@@ -2,6 +2,7 @@ package agents;
 
 
 import java.util.Date;
+import java.util.Map;
 import java.util.Random;
 import java.util.UUID;
 
@@ -88,47 +89,72 @@ public class Node extends Agent
 		}
 	}
 	
-	/**
-	 * AddNode behaviour: ajouter le nouveau node en précisant son nom et sa value
-	 */
-	private class AddNode extends OneShotBehaviour
+	private class RequestHandler extends CyclicBehaviour 
 	{
-		public AddNode(Agent a, int value, String nodeName)
-		{
-			super(a);
-			
-			m_value    = value;
-			m_nodeName = nodeName;
-		}
-		
 		@Override
 		public void action() 
 		{
-			Object[] arg = {(Integer) m_value};
-			
-			try
-			{
-				getContainerController().createNewAgent(m_nodeName, "agents.Node", arg).start();
-			}
-			catch(Exception ex)
-			{
-				ex.printStackTrace();
-			}
-		}
-		
-		private int    m_value;
-		private String m_nodeName;
+			 MessageTemplate msgTemplate = MessageTemplate.MatchPerformative(ACLMessage.REQUEST);
+			 
+			 ACLMessage msg = receive(msgTemplate);
+			 
+			 if (msg != null) 
+			 { 
+				 try 
+				 {
+					 processRequest(msg); 
+				 } 
+				 catch (Exception e) 
+				 {
+					 System.out.println(getLocalName() + " : MESSAGE INVALIDE");
+				 } 
+			 }
+			 else
+			 {
+					block();
+			 }
+		 }
 	}
 	
-	
-	private void addNewNode(int value)
+	private void processRequest(ACLMessage message)
 	{
 		
 	}
 	
+	private AID getNode(int value, String nodeName)
+	{
+		Object[] arg = {(Integer) value};
+
+		try
+		{
+			getContainerController().createNewAgent(nodeName, "agents.Node", arg).start();
+
+			return new AID(nodeName, AID.ISLOCALNAME);
+		}
+		catch(Exception ex)
+		{
+			ex.printStackTrace();
+		}
+		
+		return null;
+	}
 	
+	private boolean addNode(int value)
+	{
+		if (value > m_value)
+		{
+			
+		}
+		else if (value < m_value)
+		{
+			
+		}
+		
+		return false;
+	}
+
 	
-	static public String typeService = "Binary";
+	static public String typeService = "Binary Tree";
 	static public String nameService = "Node";
 	
 	private int m_value;
