@@ -136,7 +136,7 @@ public class Manager extends Agent
 		{
 			String action = (String) map.get("action");
 			
-			System.out.println(getName() + " receive request: " + action);
+			//System.out.println(getName() + " receive request: " + action);
 			
 			switch (action)
 			{
@@ -166,8 +166,12 @@ public class Manager extends Agent
 				case "presence":
 					if (m_root == null)
 					{
-						System.out.println("Erreur: "  + getName() + 
-								   ": action " + action    + ": root est null");
+						if (map.containsKey("value"))
+						{
+							System.out.println(getLocalName() + ": " + 
+											  (Integer) map.get("value") + 
+											  " est absent.");
+						}
 					}
 					else
 					{
@@ -179,8 +183,7 @@ public class Manager extends Agent
 				case "affichage":
 					if (m_root == null)
 					{
-						System.out.println("Erreur: "  + getName() + 
-								   ": action " + action    + ": root est null");
+						System.out.println(getLocalName() + ": aucun nombre insere.");
 					}
 					else
 					{
@@ -190,7 +193,7 @@ public class Manager extends Agent
 					break;
 					
 				default:
-					System.out.println(getName() + ": action " + action + " n'est pas disponible!");
+					System.out.println(getLocalName() + ": action " + action + " n'est pas disponible!");
 			}
 			
 		}
@@ -206,7 +209,7 @@ public class Manager extends Agent
 			
 			m_root = new AID("root", AID.ISLOCALNAME);
 			
-			System.out.println(getLocalName() + ": Racine est bien ajouté, AID : " + m_root);	
+			System.out.println(getLocalName() + value + " est insere.");	
 		}
 		catch(Exception ex)
 		{

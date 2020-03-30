@@ -25,7 +25,7 @@ public class Node extends Agent
 	{
 		register();
 		
-		System.out.println("Agent " + getLocalName() + " init!");	
+		//System.out.println("Agent " + getLocalName() + " init!");	
 		
 		Object[] args = getArguments();
 		
@@ -120,8 +120,6 @@ public class Node extends Agent
 		{
 			String action = (String) map.get("action");
 			
-			System.out.println(getName() + " receive request: " + action);
-			
 			ACLMessage reply = msg.createReply();
 			
 			switch (action)
@@ -172,7 +170,7 @@ public class Node extends Agent
 		if (m_value == value)
 		{
 			reply.setPerformative(ACLMessage.INFORM);
-			reply.setContent("Noeud presente");
+			reply.setContent(value + " est present");
 			send(reply);
 		}
 		else if (value > m_value)
@@ -184,7 +182,7 @@ public class Node extends Agent
 			else
 			{
 				reply.setPerformative(ACLMessage.REFUSE);
-				reply.setContent("Noeud n'existe pas");
+				reply.setContent(value + " est absent.");
 				send(reply);
 			}
 		}
@@ -197,7 +195,7 @@ public class Node extends Agent
 			else
 			{
 				reply.setPerformative(ACLMessage.REFUSE);
-				reply.setContent("Noeud n'existe pas");
+				reply.setContent(value + " est absent.");
 				send(reply);
 			}
 		}
@@ -208,7 +206,7 @@ public class Node extends Agent
 		if (value == m_value)
 		{
 			reply.setPerformative(ACLMessage.REFUSE);
-			reply.setContent("Noeud existe déjà");
+			reply.setContent(value + " est deja insere.");
 			send(reply);
 		}
 		
@@ -227,7 +225,7 @@ public class Node extends Agent
 				else
 				{
 					reply.setPerformative(ACLMessage.INFORM);
-					reply.setContent("Noeud avec la valeur: " + value + " est ajouté");
+					reply.setContent(value + " est insere.");
 					send(reply);
 				}
 			}
@@ -251,7 +249,7 @@ public class Node extends Agent
 				else
 				{
 					reply.setPerformative(ACLMessage.INFORM);
-					reply.setContent("Noeud avec la valeur: " + value + " est ajouté");
+					reply.setContent(value + " est insere.");
 					send(reply);
 				}
 			}
@@ -313,7 +311,6 @@ public class Node extends Agent
 			m_reply.setPerformative(ACLMessage.INFORM);
 			m_reply.setContent(inform.getContent());
 			send(m_reply);
-			//System.out.println(getLocalName() + ": " + inform.getContent());	
 		}
 		
 		@Override
@@ -332,7 +329,7 @@ public class Node extends Agent
 		if (m_leftNode == null && m_rightNode == null)
 		{
 			reply.setPerformative(ACLMessage.INFORM);
-			reply.setContent("( " + Integer.toString(m_value) + " )");
+			reply.setContent("(" + Integer.toString(m_value) + ")");
 			send(reply);
 			
 			return;
@@ -407,7 +404,7 @@ public class Node extends Agent
 		private void sendReply()
 		{
 			m_reply.setPerformative(ACLMessage.INFORM);
-			m_reply.setContent("( " + m_content + " )");
+			m_reply.setContent("(" + m_content + ")");
 			
 			send(m_reply);
 		}
