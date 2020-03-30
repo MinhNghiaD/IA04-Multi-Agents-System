@@ -1,16 +1,12 @@
 package agents;
 
-
-import java.util.Date;
+import java.util.Iterator;
 import java.util.Map;
-import java.util.Random;
 import java.util.UUID;
 
 import jade.core.AID;
 import jade.core.Agent;
 import jade.core.behaviours.CyclicBehaviour;
-import jade.core.behaviours.OneShotBehaviour;
-import jade.core.behaviours.TickerBehaviour;
 import jade.domain.DFService;
 import jade.domain.FIPAException;
 import jade.domain.FIPAAgentManagement.DFAgentDescription;
@@ -81,7 +77,6 @@ public class Node extends Agent
 		try 
 		{
 			DFService.register(this, dfd);
-			
 		} 
 		catch (FIPAException fe) 
 		{
@@ -160,19 +155,11 @@ public class Node extends Agent
 					break;
 					
 				case "affichage":
-				/*	
-					if (m_root == null)
-					{
-						System.out.println("Erreur: "  + getName() + 
-								   ": action " + action    + ": root est null");
-					}
-					else
-					{
-						request(msg.getContent());
-					}
+					
+					getTree(msg.getContent(), reply);
 					
 					break;
-				*/	
+				
 				default:
 					System.out.println(getName() + ": action " + action + " n'est pas disponible!");
 			}
@@ -338,6 +325,96 @@ public class Node extends Agent
 		}
 		
 		private ACLMessage m_reply;
+	}
+	
+	private void getTree(String json, ACLMessage reply)
+	{
+		if (m_leftNode == null && m_rightNode == null)
+		{
+			reply.setPerformative(ACLMessage.INFORM);
+			reply.setContent("( " + Integer.toString(m_value) + " )");
+			send(reply);
+			
+			return;
+		}
+		
+		ACLMessage message = new ACLMessage(ACLMessage.REQUEST);
+		
+		if (m_leftNode != null)
+		{
+			message.addReceiver(m_leftNode);
+		}
+		
+		if (m_rightNode != null)
+		{
+			message.addReceiver(m_rightNode);
+		}
+		
+		String id = UUID.randomUUID().toString();
+		message.setConversationId(id);
+		
+		String mirt = "rqt" + System.currentTimeMillis();
+		message.setReplyWith(mirt);
+		
+		message.setContent(json);
+			
+		addBehaviour(new Visualization(this, message, reply));
+	}
+	
+	private class Visualization extends AchieveREInitiator
+	{
+		Visualization(Agent agent, ACLMessage msg, ACLMessage reply)
+		{
+			super(agent, msg);
+			
+			m_content = Integer.toString(m_value);
+			m_reply   = reply;
+			
+			Iterator iter = msg.getAllReceiver();
+			m_nbSubTrees  = 0;
+			
+			while (iter.hasNext())
+			{
+				++m_nbSubTrees;
+				iter.next();
+			}
+		}
+		
+		//forward result
+		@Override
+		protected void handleInform(ACLMessage inform)
+		{
+			if (inform.getSender().equals(m_rightNode))
+			{
+				m_content  = m_content + " " + inform.getContent();
+				
+				--m_nbSubTrees;
+			}
+			
+			if (inform.getSender().equals(m_leftNode))
+			{
+				m_content  = inform.getContent() + " " + m_content;
+				
+				--m_nbSubTrees;
+			}
+			
+			if (m_nbSubTrees == 0)
+			{
+				sendReply();
+			}
+		}
+		
+		private void sendReply()
+		{
+			m_reply.setPerformative(ACLMessage.INFORM);
+			m_reply.setContent("( " + m_content + " )");
+			
+			send(m_reply);
+		}
+		
+		private String     m_content;
+		private ACLMessage m_reply;
+		private int        m_nbSubTrees;
 	}
 
 	

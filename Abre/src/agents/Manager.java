@@ -1,8 +1,6 @@
 package agents;
 
-import java.util.Date;
 import java.util.Map;
-import java.util.Random;
 import java.util.UUID;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -10,7 +8,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import jade.core.AID;
 import jade.core.Agent;
 import jade.core.behaviours.CyclicBehaviour;
-import jade.core.behaviours.TickerBehaviour;
 import jade.domain.DFService;
 import jade.domain.FIPAException;
 import jade.domain.FIPAAgentManagement.DFAgentDescription;
@@ -239,7 +236,6 @@ public class Manager extends Agent
 		SendRequest(Agent agent, ACLMessage msg)
 		{
 			super(agent, msg);
-			System.out.println(getLocalName() + ": envoit message " + msg.getContent());
 		}
 		
 		@Override
