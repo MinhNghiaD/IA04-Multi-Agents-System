@@ -209,7 +209,7 @@ public class Manager extends Agent
 			
 			m_root = new AID("root", AID.ISLOCALNAME);
 			
-			System.out.println(getLocalName() + ": Noeud est bien ajouté");	
+			System.out.println(getLocalName() + ": Racine est bien ajouté, AID : " + m_root);	
 		}
 		catch(Exception ex)
 		{
@@ -232,8 +232,6 @@ public class Manager extends Agent
 		message.setContent(json);
 			
 		addBehaviour(new SendRequest(this, message));
-
-		System.out.println(getLocalName() + " envoie demande d'insérer noeud à " + new Date());
 	}
 	
 	private class SendRequest extends AchieveREInitiator
@@ -241,6 +239,7 @@ public class Manager extends Agent
 		SendRequest(Agent agent, ACLMessage msg)
 		{
 			super(agent, msg);
+			System.out.println(getLocalName() + ": envoit message " + msg.getContent());
 		}
 		
 		@Override
