@@ -39,7 +39,7 @@ public class Manager extends Agent
 	
 	/** 
 	 * Initialiser un agent
-	 * 
+	 * Executer le comportement RequestHander
 	*/
 	protected void setup() 
 	{
@@ -127,6 +127,11 @@ public class Manager extends Agent
 		 }
 	}
 	
+	
+	/**
+	 * Traitement du message reçu
+	 *
+	 */
 	private void processRequest(ACLMessage msg)
 	{
 		//déserialise Json à Map
@@ -136,7 +141,6 @@ public class Manager extends Agent
 		{
 			String action = (String) map.get("action");
 			
-			//System.out.println(getName() + " receive request: " + action);
 			
 			switch (action)
 			{
@@ -199,6 +203,12 @@ public class Manager extends Agent
 		}
 	}
 	
+	
+	
+	/**
+	 * Création de la racine
+	 *
+	 */
 	private void addRoot(int value)
 	{
 		Object[] arg = {(Integer) value};
@@ -217,6 +227,12 @@ public class Manager extends Agent
 		}
 	}
 
+	
+	
+	/**
+	 * set time pour envoyer la requête à la racine
+	 *
+	 */
 	private void request(String json)
 	{
 		ACLMessage message = new ACLMessage(ACLMessage.REQUEST);
@@ -234,6 +250,11 @@ public class Manager extends Agent
 		addBehaviour(new SendRequest(this, message));
 	}
 	
+	
+	/**
+	 * Création de la racine
+	 *
+	 */
 	private class SendRequest extends AchieveREInitiator
 	{
 		SendRequest(Agent agent, ACLMessage msg)

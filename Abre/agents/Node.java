@@ -20,7 +20,7 @@ public class Node extends Agent
 	/** 
 	 * Initialiser un agent
 	 * 
-	*/
+	 */
 	protected void setup() 
 	{
 		register();
@@ -84,6 +84,10 @@ public class Node extends Agent
 		}
 	}
 	
+	
+	/**
+	 * Réception du message
+	 */
 	private class RequestHandler extends CyclicBehaviour 
 	{
 		@Override
@@ -111,6 +115,12 @@ public class Node extends Agent
 		 }
 	}
 	
+	
+
+	/**
+	 * Traitement du message
+	 * @param msg
+	 */
 	private void processRequest(ACLMessage msg)
 	{
 		//déserialise Json à Map
@@ -165,6 +175,17 @@ public class Node extends Agent
 		}
 	}
 	
+	
+	
+	/**
+	 * Vérification de la présence d'un noeud
+	 * Si la valeur est égale à celle du noeud actuel, il répond à son expéditeur
+	 * Sinon il demande à l'un de deux fils en fonction de la valeur
+	 * 
+	 * @param value
+	 * @param json
+	 * @param reply
+	 */
 	private void verifyNode(int value, String json, ACLMessage reply)
 	{
 		if (m_value == value)
@@ -201,6 +222,19 @@ public class Node extends Agent
 		}
 	}
 	
+	
+	
+	/**
+	 * Création d'un noeud
+	 * Si la valeur est égale à celle du noeud actuel, il répond négativement à son expéditeur
+	 * Si il a eu deux fils, il envoyer une demande de création d'un noeud à l'un des fils 
+	 * en fonction de leur valeur
+	 * Sinon il appelle la fonction getNode pour crée un fils
+	 * 
+	 * @param value
+	 * @param json
+	 * @param reply
+	 */
 	private void addNode(int value, String json, ACLMessage reply)
 	{	
 		if (value == m_value)
@@ -260,6 +294,18 @@ public class Node extends Agent
 		}
 	}
 	
+	
+	
+	/**
+	 * Inserer un noeud
+	 * Création d'un noeud dont la valeur est celle envoyée par la console Jade
+	 * Le nom de noeud à créer est celui de son père en ajoutant le suffixe -right ou -left 
+	 * en fonction de la valeur de noeud père
+	 *  
+	 * @param value
+	 * @param nodeName
+	 * @return
+	 */
 	private AID getNode(int value, String nodeName)
 	{
 		Object[] arg = {(Integer) value};
@@ -278,6 +324,14 @@ public class Node extends Agent
 		return null;
 	}
 	
+	
+	
+	/**
+	 * Préparation d'un message et Execution du comportement SendRequest
+	 * @param receiver
+	 * @param json
+	 * @param reply
+	 */
 	private void request(AID receiver, String json, ACLMessage reply)
 	{
 		ACLMessage message = new ACLMessage(ACLMessage.REQUEST);
@@ -295,6 +349,12 @@ public class Node extends Agent
 		addBehaviour(new SendRequest(this, message, reply));
 	}
 	
+	
+	/**
+	 * Héritée de la classe AchieveREInitiator
+	 * Envoyer la requête et traiter la réponse en type INFORM ou REFUSE
+	 *
+	 */
 	private class SendRequest extends AchieveREInitiator
 	{
 		SendRequest(Agent agent, ACLMessage msg, ACLMessage reply)
@@ -324,6 +384,14 @@ public class Node extends Agent
 		private ACLMessage m_reply;
 	}
 	
+	
+	/**
+	 * Envoyer la requête d'affichage aux fils
+	 * Executer le comportement de Visualization 
+	 * Afficher le noeud si il n'a pas de fils
+	 * @param json
+	 * @param reply
+	 */
 	private void getTree(String json, ACLMessage reply)
 	{
 		if (m_leftNode == null && m_rightNode == null)
@@ -358,6 +426,13 @@ public class Node extends Agent
 		addBehaviour(new Visualization(this, message, reply));
 	}
 	
+	
+	
+	/**
+	 * Héritée de la classe AchieveREInitiator
+	 * Renvoyer à l'expéditeur 
+	 *
+	 */
 	private class Visualization extends AchieveREInitiator
 	{
 		Visualization(Agent agent, ACLMessage msg, ACLMessage reply)
