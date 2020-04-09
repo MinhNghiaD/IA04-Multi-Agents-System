@@ -1,7 +1,5 @@
 package agents;
 
-import java.util.ArrayList;
-
 import jade.core.Agent;
 import jade.core.behaviours.CyclicBehaviour;
 import jade.domain.DFService;

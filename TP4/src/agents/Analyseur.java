@@ -1,10 +1,7 @@
 package agents;
 
 import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
 import java.util.Random;
-import java.util.UUID;
 
 import jade.core.AID;
 import jade.core.Agent;
