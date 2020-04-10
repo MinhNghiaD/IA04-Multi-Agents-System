@@ -1,5 +1,8 @@
 package src.agents;
 
+import java.util.Date;
+import java.util.Map;
+import java.util.UUID;
 import java.util.Vector;
 
 import jade.core.AID;
@@ -12,7 +15,9 @@ import jade.domain.FIPAAgentManagement.SearchConstraints;
 import jade.domain.FIPAAgentManagement.ServiceDescription;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
+import jade.proto.AchieveREInitiator;
 import src.objects.Cell;
+import src.objects.Grill;
 
 public class Environnement extends Agent {
 
@@ -22,7 +27,9 @@ public class Environnement extends Agent {
 		
 		System.out.println("Agent " + getLocalName() + " init!");	
 
-		addBehaviour(new MainHandler());
+		m_sudoku = new Grill();
+		
+		addBehaviour(new RequestHandler());
 	}
 	
 
@@ -68,16 +75,16 @@ public class Environnement extends Agent {
 	}
 	
 	/**
-	 * Classe MainHandler héritée de CyclicBehaviour
-	 * Cette classe est en charge de la réception des mises à jour provenance d'agents Analyseur
+	 * Classe RequestSudoku héritée de CyclicBehaviour
+	 * Cette classe est en charge de la réception des message demande de entrée sudoku
 	 *
 	 */
-	private class MainHandler extends CyclicBehaviour 
+	private class RequestHandler extends CyclicBehaviour 
 	{
 		@Override
 		public void action() 
 		{
-			 MessageTemplate msgTemplate = MessageTemplate.MatchPerformative(ACLMessage.INFORM);
+			 MessageTemplate msgTemplate = MessageTemplate.MatchPerformative(ACLMessage.REQUEST);
 			 
 			 ACLMessage msg = receive(msgTemplate);
 			 
@@ -85,9 +92,10 @@ public class Environnement extends Agent {
 			 { 
 				 try 
 				 {
-					 System.out.println( getLocalName() + " receive from " + msg.getSender().getLocalName() + ". Message : " + msg.getContent());
+					 m_sudoku = new Grill(msg.getContent());
 					 
-					 Cell cell = new Cell(msg.getContent());
+					 // Start analyzing
+					 distributedCells();
 				 } 
 				 catch (Exception e) 
 				 {
@@ -100,6 +108,65 @@ public class Environnement extends Agent {
 			 }
 		 }
 	}
+	
+	
+	private class RequestAnalyseur extends AchieveREInitiator
+	{
+		RequestAnalyseur(Agent agent, ACLMessage msg)
+		{
+			super(agent, msg);
+		}
+		
+		// In this case, if an analyseur response with a Inform message, the message is the useful data. We can ignore error cases which come with REFUSE messages
+		@Override
+		protected void handleInform(ACLMessage msg)
+		{	
+			String json = msg.getContent();
+			
+			// TODO: update cells
+			System.out.println(getLocalName() + "Receive infrom from " + msg.getSender().getLocalName());	
+			
+			// Go to next iteration
+			if (--m_nbWait == 0)
+			{
+				distributedCells();
+			}
+		}
+	}
+	
+	
+	private void distributedCells()
+	{
+		Vector<AID> analyseurAIDs = searchAnalyseur();
+		
+		m_nbWait = analyseurAIDs.size();
+		
+		System.out.println(getLocalName() + " get nb of analyseur: " + m_nbWait);
+		
+		for (AID analyseur : analyseurAIDs)
+		{
+			// organize cells to json and send it to Analyseur
+			ACLMessage message = new ACLMessage(ACLMessage.REQUEST);
+			
+			String id = UUID.randomUUID().toString();
+			message.setConversationId(id);
+				
+			String mirt = "rqt" + System.currentTimeMillis();
+			message.setReplyWith(mirt);
+			
+			message.addReceiver(analyseur);
+			
+			//TODO: distributed cells
+			message.setContent("request"); 
+			
+			System.out.println(getLocalName() + " send request to " + analyseur.getName());
+			
+			addBehaviour(new RequestAnalyseur(this, message));
+		}
+	}
+	
+	
+	
 	
 	/**
 	 * Chercher les analyseurs via la page jaune
@@ -120,7 +187,7 @@ public class Environnement extends Agent {
 
 		try 
 		{
-			DFAgentDescription[] result = DFService.search(this, template, sc); 	
+			DFAgentDescription[] result = DFService.search(this, template); 	
 
 			if (result.length > 0 ) {
 
@@ -143,4 +210,7 @@ public class Environnement extends Agent {
 		
 	static public String typeService 	  = "Update";
 	static public String nameService 	  = "Etat";
+	
+	private Grill m_sudoku;
+	private int   m_nbWait;
 }

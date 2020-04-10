@@ -22,20 +22,9 @@ public class Analyseur extends Agent {
 		register();
 		
 		System.out.println("Agent " + getLocalName() + " init!");	
-/*		
-		Object[] args = getArguments();
-		
-		if (args.length != 1)
-		{
-			System.out.println("Faux Nombre d'arguments!");	
-			
-			return;
-		}
      
-		m_case	   = (ArrayList<Integer>) args[0];
- */         
 		addBehaviour(new Pong());
-		//addBehaviour(new updateEnv());
+		addBehaviour(new RequestHandler());
 	}
 	
 
@@ -51,6 +40,32 @@ public class Analyseur extends Agent {
 		catch (FIPAException e) 
 		{
 			e.printStackTrace();
+		}
+	}
+	
+	/**
+	 * Inscrire simulateur a la page blanche pour avoir un AID valide
+	 */
+	private void register() 
+	{
+		DFAgentDescription dfd = new DFAgentDescription();
+		dfd.setName(getAID());
+		
+		ServiceDescription sd = new ServiceDescription();
+		
+		sd.setType(typeService);
+		sd.setName(nameService);
+		
+		dfd.addServices(sd);
+	
+		try 
+		{
+			DFService.register(this, dfd);
+			
+		} 
+		catch (FIPAException fe) 
+		{
+			fe.printStackTrace();
 		}
 	}
 	
@@ -100,7 +115,7 @@ public class Analyseur extends Agent {
 	 *
 	 */
 
-/*	
+
 	private class RequestHandler extends CyclicBehaviour 
 	{
 		@Override
@@ -114,7 +129,18 @@ public class Analyseur extends Agent {
 			 { 
 				 try 
 				 {
-					 replySimulateur(msg); 
+					 //replySimulateur(msg);
+					 
+					 System.out.println(getLocalName() + " reveice " + msg.getContent());
+					 
+					 ACLMessage reply = msg.createReply();
+						
+					 reply.setPerformative(ACLMessage.INFORM);
+						
+				   	 reply.setContent("Inform");
+						
+					 send(reply);
+					 
 				 } 
 				 catch (Exception e) 
 				 {
@@ -128,7 +154,7 @@ public class Analyseur extends Agent {
 		 }
 	}
 	
-	
+/*
 	private void replySimulateur(ACLMessage msg) {
 		
 		String sender = msg.getSender().getLocalName();
@@ -169,71 +195,8 @@ public class Analyseur extends Agent {
 			System.out.println(getLocalName() + " update Environnement. ");
 		}
 	}
-	
-	
-	private AID searchEnvironnement() 
-	{
-		DFAgentDescription template = new DFAgentDescription();
-		
-		ServiceDescription sd = new ServiceDescription();
-		sd.setType(Environnement.typeService);
-		sd.setName(Environnement.nameService);
-		
-		template.addServices(sd);
-		
-		AID receiver = null;
-		
-		try 
-		{
-			DFAgentDescription[] result = DFService.search(this, template);
-			
-			int n = result.length;
-			
-			Random r = new Random();
-			
-			if (n > 0) 
-			{
-				int v = r.nextInt(n);
-				receiver = result[v].getName();
-			}
-		} 
-		catch (FIPAException fe) 
-		{
-			fe.printStackTrace();
-		}
-		
-		return receiver;
-	}
-*/	
-	
-	/**
-	 * Inscrire simulateur a la page blanche pour avoir un AID valide
-	 */
-	private void register() 
-	{
-		DFAgentDescription dfd = new DFAgentDescription();
-		dfd.setName(getAID());
-		
-		ServiceDescription sd = new ServiceDescription();
-		
-		sd.setType(typeService);
-		sd.setName(nameService);
-		
-		dfd.addServices(sd);
-	
-		try 
-		{
-			DFService.register(this, dfd);
-			
-		} 
-		catch (FIPAException fe) 
-		{
-			fe.printStackTrace();
-		}
-	}
+*/
 	
 	static public String typeService = "Analyser";
 	static public String nameService = "Cell Value";	
-	
-	private ArrayList<Integer> m_case;	 
 }

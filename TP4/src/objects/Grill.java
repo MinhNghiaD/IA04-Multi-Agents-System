@@ -32,10 +32,33 @@ public class Grill
 	{
 		m_matrix = new Vector<Vector<Cell> >();
 		
+		File file = new File(fileName);
+		
+	 	if (! file.exists())
+	 	{	
+	 		System.out.println("Warning :" + fileName + " does not exist");
+	 		
+	 		m_states = new boolean[9][9];
+			
+			for (int i = 0; i < 9; ++i)
+			{
+				Vector<Cell> row = new Vector<Cell>();
+				
+				for (int j = 0; j < 9; ++j)
+				{
+					row.add(new Cell());
+					
+					m_states[i][j] = false;
+				}
+				
+				m_matrix.add(row);
+			}
+			
+	 		return;
+	 	}
+	 	
 		try 
 		{
-			File file = new File(fileName);
-		      
 		    Scanner parser = new Scanner(file);
 		      
 		    while (parser.hasNextLine()) 
