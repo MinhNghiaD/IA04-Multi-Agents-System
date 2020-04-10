@@ -26,6 +26,7 @@ import jade.wrapper.StaleProxyException;
 
 public class Simulateur extends Agent {
 
+/*---------------------------------------------------------Setup and tear down---------------------------------------------------------------*/
 	@Override
 	protected void setup() 
 	{	
@@ -70,7 +71,6 @@ public class Simulateur extends Agent {
 		
 		addBehaviour(new Ping(this, m_period)); 
 	}
-	
 
 	@Override
 	protected void takeDown()
@@ -86,7 +86,6 @@ public class Simulateur extends Agent {
 			e.printStackTrace();
 		}
 	}
-	
 	
 	/**
 	 * Inscrire simulateur a la page blanche pour avoir un AID valide
@@ -114,7 +113,7 @@ public class Simulateur extends Agent {
 		}
 	}
 
-	
+/* ------------------------------------------------------------------------ Health check and control Analyseur---------------------------------*/
 	/**
 	 * Classe Ping héritée de TickerBehaviour
 	 * Elle va renvoyer un ping aux analyseurs après une période pré-définie
@@ -210,7 +209,7 @@ public class Simulateur extends Agent {
 		private Vector<AID> m_reponderAID;
 	}
 	
-	
+/* ------------------------------------------------------------Manage Agents ----------------------------------------------------------*/
 	/**
 	 * Créer et démarrer l'agent Environnement
 	 */
@@ -248,6 +247,10 @@ public class Simulateur extends Agent {
 		return null;
 	}
 	
+	/**
+	 * Envoyer une demande à AMS pour terminer un agent bloquant
+	 * @param name
+	 */
 	private void killAgent(AID name) 
 	{
 		ACLMessage request = createAMSRequest();
@@ -271,7 +274,7 @@ public class Simulateur extends Agent {
 	        getContentManager().fillContent(request, (ContentElement) act);
 	        
 	        FIPAService.doFipaRequestClient(this, request, 10000);
-	        
+	        killAgent
 	        System.out.println(getLocalName() + " request to kill " + name.getLocalName());
 	    } 
 	    catch (Exception e) 
@@ -292,7 +295,7 @@ public class Simulateur extends Agent {
 		return request;
 	}
 	
-	/*---------------------------------------------- Attributes ----------------------------------------------*/
+/*--------------------------------------------------------- Attributes -----------------------------------------------------*/
 	
 	static public  String typeService 	  = "Simuler";
 	static public  String nameService 	  = "Sudoku";
@@ -305,7 +308,4 @@ public class Simulateur extends Agent {
 	
 	//keep track of alive analyseur
 	private Vector<AID> m_aliveAnalyseur;
-	
-	// constant used to set max results of SearchConstraints
-    private static Long MINUSONE = new Long(-1);
 }

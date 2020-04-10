@@ -21,15 +21,20 @@ import src.objects.Grill;
 
 public class Environnement extends Agent {
 
+/* ----------------------------------------------------------------------Setup and tear down ----------------------------------------------*/
 	@Override
 	protected void setup() {
 		register();
 		
 		System.out.println("Agent " + getLocalName() + " init!");	
 
-		m_sudoku = new Grill();
+		//m_sudoku = new Grill();
 		
 		addBehaviour(new RequestHandler());
+		
+		m_sudoku = new Grill("data/sudoku1.res");
+		
+		distributedCells();
 	}
 	
 
@@ -74,6 +79,7 @@ public class Environnement extends Agent {
 		}
 	}
 	
+
 	/**
 	 * Classe RequestSudoku héritée de CyclicBehaviour
 	 * Cette classe est en charge de la réception des message demande de entrée sudoku
@@ -108,7 +114,8 @@ public class Environnement extends Agent {
 			 }
 		 }
 	}
-	
+
+/* ---------------------------------------------------------------------- Handle Sudoku ----------------------------------------------------*/
 	
 	private class RequestAnalyseur extends AchieveREInitiator
 	{
@@ -121,15 +128,34 @@ public class Environnement extends Agent {
 		@Override
 		protected void handleInform(ACLMessage msg)
 		{	
-			String json = msg.getContent();
+			String json  = msg.getContent();
 			
-			// TODO: update cells
-			System.out.println(getLocalName() + "Receive infrom from " + msg.getSender().getLocalName());	
+			// Update cells
+			Map<String, Object> map = Cell.jsonToMap(msg.getContent());
+			
+			Vector<Cell> cells = Cell.jsonToCells(json);
+			
+			m_sudoku.updateSudoku(cells, 
+								 (Integer) map.get("high"), 
+								 (Integer) map.get("low"), 
+								 (Integer) map.get("left"), 
+								 (Integer) map.get("right"));
 			
 			// Go to next iteration
 			if (--m_nbWait == 0)
 			{
-				distributedCells();
+				System.out.println("----------------------End of Step----------------------------");
+				m_sudoku.printOutSudoku();
+				
+				if (m_sudoku.isFinished())
+				{
+					System.out.println("SUDOKU SOLVED !!!");
+					//m_sudoku.printOutSudoku();
+				}
+				else
+				{
+					distributedCells();
+				}
 			}
 		}
 	}
@@ -141,33 +167,78 @@ public class Environnement extends Agent {
 		
 		m_nbWait = analyseurAIDs.size();
 		
-		System.out.println(getLocalName() + " get nb of analyseur: " + m_nbWait);
+		int messageOrder = 0;
 		
-		for (AID analyseur : analyseurAIDs)
+		// send row to analyseur
+		for (int i = 0; i < 9; ++i)
 		{
+			if (messageOrder == m_nbWait)
+			{
+				return;
+			}
+			
 			// organize cells to json and send it to Analyseur
-			ACLMessage message = new ACLMessage(ACLMessage.REQUEST);
+			String json = m_sudoku.cellsToJson(i, i, 0, 8);
 			
-			String id = UUID.randomUUID().toString();
-			message.setConversationId(id);
+			sendRequest(analyseurAIDs.elementAt(messageOrder), json);
+			
+			++messageOrder;
+		}
+		
+		// send column to analyseur
+		for (int i = 0; i < 9; ++i)
+		{
+			if (messageOrder == m_nbWait)
+			{
+				return;
+			}
+			
+			// organize cells to json and send it to Analyseur
+			String json = m_sudoku.cellsToJson(0, 8, i, i);
+			
+			sendRequest(analyseurAIDs.elementAt(messageOrder), json);
+			
+			++messageOrder;
+		}	
+		
+		// send quare to analyseur
+		for (int i = 0; i < 3; ++i)
+		{
+			for (int j = 0; j < 3; ++j)
+			{
+				if (messageOrder == m_nbWait)
+				{
+					return;
+				}
 				
-			String mirt = "rqt" + System.currentTimeMillis();
-			message.setReplyWith(mirt);
-			
-			message.addReceiver(analyseur);
-			
-			//TODO: distributed cells
-			message.setContent("request"); 
-			
-			System.out.println(getLocalName() + " send request to " + analyseur.getName());
-			
-			addBehaviour(new RequestAnalyseur(this, message));
+				// organize cells to json and send it to Analyseur
+				String json = m_sudoku.cellsToJson((3 * i), (3 * (i + 1)) - 1 , (3 * j), (3 * (j + 1)) - 1);
+				
+				sendRequest(analyseurAIDs.elementAt(messageOrder), json);
+				
+				++messageOrder;
+			}
 		}
 	}
 	
+	private void sendRequest(AID receiver, String content)
+	{
+		ACLMessage message = new ACLMessage(ACLMessage.REQUEST);
+					
+		String id = UUID.randomUUID().toString();
+		message.setConversationId(id);
+						
+		String mirt = "rqt" + System.currentTimeMillis();
+		message.setReplyWith(mirt);
+					
+		message.addReceiver(receiver);
+		
+		message.setContent(content); 
+					
+		addBehaviour(new RequestAnalyseur(this, message));
+	}
 	
-	
-	
+/* ------------------------------------------------------------- Manage agents -------------------------------------------------------------------*/
 	/**
 	 * Chercher les analyseurs via la page jaune
 	 * @return AID
@@ -206,7 +277,7 @@ public class Environnement extends Agent {
 	}
 	
 	
-	/*--------------------------------------Attributes---------------------------------------------*/
+/*-------------------------------------------------------Attributes------------------------------------------------------------*/
 		
 	static public String typeService 	  = "Update";
 	static public String nameService 	  = "Etat";

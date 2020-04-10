@@ -24,8 +24,6 @@ public class MainBoot {
 			//Créer l'agent Simulateur
 			Object[] period = {(Integer) 5000};
 			AgentController simulateur = mainContainer.createNewAgent("Simulateur", "src.agents.Simulateur", period);
-
-			//Grill grill = new Grill("data/sudoku1.res");
 			
 			//Démarrer l'agent simulation
 			simulateur.start();

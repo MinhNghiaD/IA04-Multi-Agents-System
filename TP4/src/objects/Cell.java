@@ -5,7 +5,8 @@ import java.util.Vector;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import jade.util.leap.HashMap;
+import java.util.HashMap;
+import java.util.concurrent.Semaphore;
 
 
 /*
@@ -18,7 +19,74 @@ import jade.util.leap.HashMap;
  */
 
 public class Cell 
-{
+{	
+	/* ---------------------------------------------------------Static methods -----------------------------------------------------*/
+	static public Vector<Cell> jsonToCells(String json)
+	{
+		Map<String, Object> map = Cell.jsonToMap(json);
+		
+		Vector<Cell> cells = new Vector<>();
+		
+		int counter = 0;
+		
+		while(true)
+		{
+			Object encodedCell = map.get(("cell" + counter));
+			
+			if (encodedCell == null)
+			{
+				break;
+			}
+			
+			Cell newCell = new Cell((String) encodedCell);
+			
+			cells.add(newCell);
+			
+			++counter;
+		}
+		
+		return cells;
+	}
+	
+	static public Map<String, Object> jsonToMap(String json)
+	{
+		Map<String, Object> map = null;
+		
+		ObjectMapper mapper = new ObjectMapper();
+		
+		try 
+		{
+			map = mapper.readValue(json, Map.class);
+		}
+		catch(Exception ex) 
+		{
+			ex.printStackTrace();
+		}
+		
+		return map;
+	}
+	
+	static public String mapToJson(Map<String, Object> map)
+	{	
+		ObjectMapper mapper = new ObjectMapper();
+		
+		String json = new String();
+		
+		try
+		{
+			json = mapper.writeValueAsString(map);
+			
+			//System.out.println(json);
+		}
+		catch(Exception ex) 
+		{
+			ex.printStackTrace();
+		}
+		
+		return json;
+	}
+
+/* ---------------------------------------------------- Constructors -----------------------------------------------------*/
 	public Cell()
 	{
 		m_value 		 = 0;
@@ -63,6 +131,7 @@ public class Cell
 		}
 	}
 	
+/* ---------------------------------------------------------------------------Accessors ----------------------------------------------------------------*/
 	public Vector<Integer> getPossibleValues()
 	{
 		return m_possibleValues;
@@ -74,12 +143,25 @@ public class Cell
 	}
 	
 	public boolean updatePossbileValues(Vector<Integer> values)
-	{
+	{	
 		if (m_possibleValues == null)
 		{
 			return true;
 		}
 		
+		Vector<Integer> valuesToRemove = new Vector<Integer>();
+		
+		// find intersection of 2 vectors
+		for (Integer value : m_possibleValues)
+		{
+			if (! values.contains(value))
+			{
+				valuesToRemove.add(value);
+			}
+		}
+		
+		m_possibleValues.removeAll(valuesToRemove);
+			
 		if (values.size() == 1)
 		{
 			m_value = values.elementAt(0);
@@ -88,24 +170,34 @@ public class Cell
 			
 			return true;
 		}
-	
-		m_possibleValues = values;
 		
 		return false;
 	}
 	
-	@SuppressWarnings("null")
+	public void eliminateStableValues(Vector<Integer> values)
+	{
+		if (m_possibleValues == null)
+		{
+			return;
+		}
+		
+		m_possibleValues.removeAll(values);
+	}
+	
 	public String cellToJson()
 	{
-		Map<String, Object> map = null;
+		Map<String, Object> map = new HashMap<String, Object>();
 		
 		map.put("value", m_value);
 		
 		String values = new String();
 		
-		for (int i : m_possibleValues)
+		if (m_possibleValues != null)
 		{
-			values += ('0' + i);
+			for (Integer i : m_possibleValues)
+			{
+				values += i;
+			}
 		}
 		
 		map.put("possibleValues", values);
@@ -113,45 +205,11 @@ public class Cell
 		return mapToJson(map);
 	}
 	
-	static public Map<String, Object> jsonToMap(String json)
-	{
-		Map<String, Object> map = null;
-		
-		ObjectMapper mapper = new ObjectMapper();
-		
-		try 
-		{
-			map = mapper.readValue(json, Map.class);
-		}
-		catch(Exception ex) 
-		{
-			ex.printStackTrace();
-		}
-		
-		return map;
-	}
-	
-	static public String mapToJson(Map<String, Object> map)
-	{	
-		ObjectMapper mapper = new ObjectMapper();
-		
-		String json = new String();
-		
-		try
-		{
-			json = mapper.writeValueAsString(map);
-			
-			System.out.println(json);
-		}
-		catch(Exception ex) 
-		{
-			ex.printStackTrace();
-		}
-		
-		return json;
-	}
+/* ------------------------------------------------------------- Attributes --------------------------------------------*/
 	
 	private int 			m_value;
 	
 	private Vector<Integer> m_possibleValues;
+	private Semaphore 	    m_mutex = new Semaphore(1);
+	
 }

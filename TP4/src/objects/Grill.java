@@ -4,9 +4,12 @@ import java.io.File;
 import java.util.Map;
 import java.util.Scanner;
 import java.util.Vector;
+import java.util.Arrays;
+import java.util.HashMap;
 
 public class Grill 
 {
+/* -------------------------------------------------------------Constructors -------------------------------------------------*/
 	public Grill()
 	{
 		m_matrix = new Vector<Vector<Cell> >();
@@ -32,13 +35,21 @@ public class Grill
 	{
 		m_matrix = new Vector<Vector<Cell> >();
 		
+		m_states = new boolean[9][9];
+		
+		for (int i = 0; i < 9; ++i)
+		{	
+			for (int j = 0; j < 9; ++j)
+			{
+				m_states[i][j] = false;
+			}
+		}
+		
 		File file = new File(fileName);
 		
 	 	if (! file.exists())
 	 	{	
 	 		System.out.println("Warning :" + fileName + " does not exist");
-	 		
-	 		m_states = new boolean[9][9];
 			
 			for (int i = 0; i < 9; ++i)
 			{
@@ -47,8 +58,6 @@ public class Grill
 				for (int j = 0; j < 9; ++j)
 				{
 					row.add(new Cell());
-					
-					m_states[i][j] = false;
 				}
 				
 				m_matrix.add(row);
@@ -65,8 +74,6 @@ public class Grill
 		    {
 		    	String data = parser.nextLine();
 		    	
-		    	System.out.println("read : " + data);
-		    	
 		    	Vector<Cell> row = new Vector<Cell>();
 		    	
 		    	for (int i = 0; i < data.length(); ++i)
@@ -76,6 +83,7 @@ public class Grill
 					if (possibleValue == 0)
 					{
 						row.add(new Cell());
+						
 					}
 					else if (possibleValue < 10 && possibleValue > 0)
 					{
@@ -92,12 +100,17 @@ public class Grill
 		{
 			e.printStackTrace();
 	    }
-		
-		printOutSudoku();
 	}
+	
+/* ---------------------------------------------------------------- Accessors ---------------------------------------------------*/
 	
 	public void updateCell(Cell cell, int x, int y)
 	{
+		if (m_states == null)
+		{
+			System.out.println("mstate is null");
+		}
+		
 		if (!m_states[x][y])
 		{
 			m_states[x][y] = m_matrix.elementAt(x).elementAt(y).updatePossbileValues(cell.getPossibleValues());
@@ -119,7 +132,7 @@ public class Grill
 	
 	public String cellsToJson(int high, int low, int left, int right)
 	{
-		Map<String, Object> map = null;
+		Map<String, Object> map = new HashMap<String, Object>();
 		
 		// encode position of cells
 		map.put("high" , high);
@@ -142,7 +155,6 @@ public class Grill
 		
 		return Cell.mapToJson(map);
 	}
-	
 	
 	public boolean isFinished()
 	{
@@ -179,6 +191,7 @@ public class Grill
 		}
 	}
 	
+/*-----------------------------------------------------------Attributes ----------------------------------------------*/
 	private Vector<Vector<Cell> > m_matrix;
 	private boolean[][] 		  m_states;
 }

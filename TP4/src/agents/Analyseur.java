@@ -1,7 +1,9 @@
 package src.agents;
 
 import java.util.ArrayList;
+import java.util.Map;
 import java.util.Random;
+import java.util.Vector;
 
 import jade.core.AID;
 import jade.core.Agent;
@@ -13,9 +15,11 @@ import jade.domain.FIPAAgentManagement.DFAgentDescription;
 import jade.domain.FIPAAgentManagement.ServiceDescription;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
+import src.objects.Cell;
 
 public class Analyseur extends Agent {
 
+/* -----------------------------------------------------Setup and tear down --------------------------------------------------*/
 	@Override
 	protected void setup() 
 	{
@@ -26,7 +30,6 @@ public class Analyseur extends Agent {
 		addBehaviour(new Pong());
 		addBehaviour(new RequestHandler());
 	}
-	
 
 	@Override
 	protected void takeDown() {
@@ -68,7 +71,8 @@ public class Analyseur extends Agent {
 			fe.printStackTrace();
 		}
 	}
-	
+
+/*-----------------------------------------------------------------Communication with Simulateur---------------------------------------------*/
 	private class Pong extends CyclicBehaviour 
 	{
 		@Override
@@ -87,7 +91,8 @@ public class Analyseur extends Agent {
 				 } 
 				 catch (Exception e) 
 				 {
-					 System.out.println(getLocalName() + " : MESSAGE INVALIDÉ");
+					 System.out.println(getLocalName() + " : MESSAGE INVALIDÉ : " + msg.getContent());
+					 e.printStackTrace();
 				 } 
 			 }
 			 else
@@ -108,14 +113,12 @@ public class Analyseur extends Agent {
 		}
 	}
 	
-	
+/* ---------------------------------------------------------------------Communication with Environment-----------------------------------------------*/
 	/**
-	 * Classe requestHandler héritée de CyclicBehaviour
-	 * Cette classe est en charge de la réception des demandes du Simulateur et les traiter
+	 * Classe RequestHandler héritée de CyclicBehaviour
+	 * Cette classe est en charge de la réception des demandes du Environment et les traiter
 	 *
 	 */
-
-
 	private class RequestHandler extends CyclicBehaviour 
 	{
 		@Override
@@ -128,23 +131,13 @@ public class Analyseur extends Agent {
 			 if (msg != null) 
 			 { 
 				 try 
-				 {
-					 //replySimulateur(msg);
-					 
-					 System.out.println(getLocalName() + " reveice " + msg.getContent());
-					 
-					 ACLMessage reply = msg.createReply();
-						
-					 reply.setPerformative(ACLMessage.INFORM);
-						
-				   	 reply.setContent("Inform");
-						
-					 send(reply);
-					 
+				 { 
+					 handleRequest(msg);
 				 } 
 				 catch (Exception e) 
 				 {
-					 System.out.println(getLocalName() + " : MESSAGE INVALIDÉ");
+					 System.out.println(getLocalName() + " : MESSAGE INVALIDÉ : " + msg.getContent());
+					 e.printStackTrace();
 				 } 
 			 }
 			 else
@@ -154,48 +147,55 @@ public class Analyseur extends Agent {
 		 }
 	}
 	
-/*
-	private void replySimulateur(ACLMessage msg) {
-		
-		String sender = msg.getSender().getLocalName();
-			
-		ACLMessage reply = msg.createReply();
-		
-		if (!m_active) 
-		{ 
-			//Réponse positive
-			reply.setPerformative(ACLMessage.INFORM);
-			reply.setContent("Agent actif.");
-		} 
-		else 
-		{ 
-			//Réponse négative
-			reply.setPerformative(ACLMessage.REFUSE);
-			reply.setContent("Agent inactif");
-		}
-
-		send(reply);
-	}
-*/
-
-/*	
-	private class updateEnv extends OneShotBehaviour
+	
+	private void process(Vector<Cell> cells)
 	{
-		@Override
-		public void action() {
-			ACLMessage message = new ACLMessage(ACLMessage.INFORM);
+		Vector<Integer> stableValues = new Vector<Integer>();
+		
+		int value = 0;
+		
+		for (Cell cell : cells)
+		{
+			value = cell.getValue();
 			
-			AID env = searchEnvironnement();
-			
-			message.addReceiver(env);
-					
-			message.setContent("hi"); 
-					
-			send(message);
-			System.out.println(getLocalName() + " update Environnement. ");
+			if (value > 0)
+			{
+				stableValues.add(value);
+			}
+		}
+		
+		for (Cell cell : cells)
+		{
+			cell.eliminateStableValues(stableValues);
 		}
 	}
-*/
+	
+	private void handleRequest(ACLMessage msg)
+	{
+		 //analyze cells
+		 Vector<Cell> cells = Cell.jsonToCells(msg.getContent());
+		 
+		 process(cells);
+		 
+		 // Construct response
+		 ACLMessage reply = msg.createReply();
+			
+		 reply.setPerformative(ACLMessage.INFORM);
+		 
+		 // reuse structure of message
+		 Map<String, Object> map = Cell.jsonToMap(msg.getContent());
+		 
+		 for (int i = 0; i < cells.size(); ++i)
+		 {
+			 map.put("cell"+i, cells.elementAt(i).cellToJson());
+		 }
+		 
+	   	 reply.setContent(Cell.mapToJson(map));
+			
+		 send(reply);
+	}
+	
+/*--------------------------------------------------------------Attributes----------------------------------------------------*/
 	
 	static public String typeService = "Analyser";
 	static public String nameService = "Cell Value";	
