@@ -1,17 +1,25 @@
-package agents;
+package src.agents;
 
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.UUID;
+import java.util.Vector;
 
+import jade.content.ContentElement;
+import jade.content.lang.sl.SLCodec;
+import jade.content.onto.basic.Action;
 import jade.core.AID;
 import jade.core.Agent;
 import jade.core.behaviours.TickerBehaviour;
 import jade.domain.DFService;
 import jade.domain.FIPAException;
+import jade.domain.FIPANames;
+import jade.domain.FIPAService;
 import jade.domain.FIPAAgentManagement.DFAgentDescription;
 import jade.domain.FIPAAgentManagement.SearchConstraints;
 import jade.domain.FIPAAgentManagement.ServiceDescription;
+import jade.domain.JADEAgentManagement.JADEManagementOntology;
+import jade.domain.JADEAgentManagement.KillAgent;
 import jade.lang.acl.ACLMessage;
 import jade.proto.AchieveREInitiator;
 import jade.wrapper.StaleProxyException;
@@ -22,8 +30,8 @@ public class Simulateur extends Agent {
 	protected void setup() 
 	{	
 		register();
-		createAnalyseur();
-		createEnvironnement();
+		
+		m_nbAnalyseurs = 0;
 		
 		System.out.println("Agent " + getLocalName() + " init!");	
 		
@@ -36,9 +44,29 @@ public class Simulateur extends Agent {
 			return;
 		}
         
-		m_period 	   = (Integer) args[0];
+		m_period = (Integer) args[0];
+		
+		if (m_period < 3000)
+		{
+			System.out.println("Interval trop court!");	
+			
+			return;
+		}
         
-		addBehaviour(new ContactAnalyseur(this, m_period)); 
+		//add 27 analyseurs
+		m_aliveAnalyseur = new Vector<AID>();
+		
+		while (m_aliveAnalyseur.size() < 27)
+		{
+			AID agent = createAnalyseur();
+			
+			if (agent != null)
+			{
+				m_aliveAnalyseur.add(agent);
+			}
+		}
+		
+		addBehaviour(new Ping(this, m_period)); 
 	}
 	
 
@@ -54,81 +82,6 @@ public class Simulateur extends Agent {
 		catch (FIPAException e) 
 		{
 			e.printStackTrace();
-		}
-
-	}
-
-	
-	/**
-	 * Classe ContactAnalyseur héritée de TickerBehaviour
-	 * Elle va renvoyer la demande après une période pré-définie
-	 *
-	 */
-	private class ContactAnalyseur extends TickerBehaviour 
-	{
-		public ContactAnalyseur(Agent agent, Integer period) 
-		{
-			super(agent, period);
-		}
-			
-		@Override
-		protected void onTick() 
-		{	
-			ACLMessage message = new ACLMessage(ACLMessage.REQUEST);
-				
-			ArrayList<AID> listAnalyseur = searchAnalyseur();
-			
-			if (listAnalyseur.size() > 0)
-			{
-				for (AID a : listAnalyseur) {
-					
-					message.addReceiver(a);
-					
-					message.setContent("hi"); 
-					
-					String id = UUID.randomUUID().toString();
-					message.setConversationId(id);
-						
-					String mirt = "rqt" + System.currentTimeMillis();
-					message.setReplyWith(mirt);
-					
-					// Vérifier si l'agent survit
-					addBehaviour(new HealthCheck(getAgent() , message));
-					
-					System.out.println("\n" + getLocalName() + " demande au " + a.getLocalName() + " à " + new Date());
-				}
-				
-			}
-		}
-
-	}
-	
-	
-	/**
-	 * Classe HealthCheck hérité de AchieveREInitiator
-	 * Elle attent le réponse seulement si elle vient d'envoyer un requete 
-	 */
-	private class HealthCheck extends AchieveREInitiator
-	{
-		HealthCheck(Agent agent, ACLMessage msg)
-		{
-			super(agent, msg);
-		}
-		
-		@Override
-		protected void handleInform(ACLMessage inform)
-		{
-			if (inform.getContent() != null)
-			{
-				System.out.println( getLocalName() + " reçoit de " + inform.getSender().getLocalName() + ". Message : " + inform.getContent());	
-			} else {
-				System.out.println("HealthCheck, empty inform.");
-			}
-		}
-		
-		protected void handleRefuse(ACLMessage refuse)
-		{
-			System.out.println(refuse.getSender().getLocalName() + " est désactive !");
 		}
 	}
 	
@@ -158,94 +111,200 @@ public class Simulateur extends Agent {
 			fe.printStackTrace();
 		}
 	}
+
+	
+	/**
+	 * Classe Ping héritée de TickerBehaviour
+	 * Elle va renvoyer un ping aux analyseurs après une période pré-définie
+	 *
+	 */
+	private class Ping extends TickerBehaviour 
+	{
+		public Ping(Agent agent, int period) 
+		{
+			super(agent, period);
+		}
+			
+		@Override
+		protected void onTick() 
+		{	
+			//Use QUERY_IF as message type to verify agent is alive
+			ACLMessage message = new ACLMessage(ACLMessage.QUERY_IF);
+			
+			String id = UUID.randomUUID().toString();
+			message.setConversationId(id);
+				
+			String mirt = "rqt" + System.currentTimeMillis();
+			message.setReplyWith(mirt);
+			
+			message.setContent("presence"); 
+			
+			if (m_aliveAnalyseur.size() > 0)
+			{
+				for (AID a : m_aliveAnalyseur) 
+				{
+					message.addReceiver(a);
+				}
+				
+				//set timeout to 3000 ms
+				Date timeout = new Date();
+				timeout.setTime(timeout.getTime() + 3000);
+				
+				message.setReplyByDate(timeout);
+				
+				addBehaviour(new HealthCheck(getAgent() , message));
+			}
+		}
+
+	}
+	
+	
+	/**
+	 * Classe HealthCheck hérité de AchieveREInitiator
+	 * Elle attent le réponse seulement si elle vient d'envoyer un requete 
+	 */
+	private class HealthCheck extends AchieveREInitiator
+	{
+		HealthCheck(Agent agent, ACLMessage msg)
+		{
+			super(agent, msg);
+			
+			m_reponderAID = new Vector<AID>();
+		}
+		
+		// In this case, if agent receives the ping, it will reply with a pong. If not, it means the agent is dead and need to be replace.
+		@Override
+		protected void handleInform(ACLMessage msg)
+		{
+			//System.out.println(getLocalName() + " receive pong from " + msg.getSender());
+			
+			m_reponderAID.add(msg.getSender());
+		}
+		
+		@Override
+		protected void handleAllResponses(Vector v) 
+		{
+			for (AID a : m_aliveAnalyseur)
+			{
+			 	if (! m_reponderAID.contains(a))
+			 	{			
+			 		killAgent(a);
+			 		
+			 		//replace by adding one more client to complete the number of necessary clients
+				    AID agent = createAnalyseur();
+				    
+				    if (agent != null)
+				    {
+				    	System.out.println(getLocalName() + ": add new agent: " + agent.getLocalName() + " at " + new Date());
+				    	
+				    	m_reponderAID.add(agent);
+				    }
+			 	}
+			}
+			
+			m_aliveAnalyseur = m_reponderAID;
+		}
+		
+		private Vector<AID> m_reponderAID;
+	}
 	
 	
 	/**
 	 * Créer et démarrer l'agent Environnement
 	 */
+/*
 	private void createEnvironnement() 
 	{
 		try
 		{
-			getContainerController().createNewAgent("Environnement", "agents.Environnement", null).start();
-
+			getContainerController().createNewAgent("Environnement", "src.agents.Environnement", null).start();
 		}
 		catch(Exception ex)
 		{
 			ex.printStackTrace();
 		}
 	}
-
+*/
 	
 	/**
 	 * Créer et démarrer l'agent Analyseur
 	 */
-	private void createAnalyseur() {
-		
-		ArrayList<Integer> caseToSolve = new ArrayList<>();
-		
-		for (int i = 0; i <= 9; i++) {
-			caseToSolve.add(0);
-		}
-		
-		for ( int i = 0; i < 27; i++ ) {
-			
-			Object[] arg = {(ArrayList<Integer>) caseToSolve};
-			String name = "Analyseur" + i;
-			
-			try {
-				getContainerController().createNewAgent(name, "agents.Analyseur", arg).start();
-			} catch (StaleProxyException e) {
-				e.printStackTrace();
-			}
-		}
-		
-	}
-	
-	
-	/**
-	 * Chercher les analyseurs via la page jaune
-	 * @return AID
-	 */
-	@SuppressWarnings("null")
-	private ArrayList<AID> searchAnalyseur() 
+	private AID createAnalyseur() 
 	{
-		DFAgentDescription template = new DFAgentDescription();
-		
-		ServiceDescription sd = new ServiceDescription();
-		sd.setType(Analyseur.typeService);
-		sd.setName(Analyseur.nameService);
-		
-		SearchConstraints sc = new SearchConstraints();
-		sc.setMaxResults(MINUSONE);
-		
-		template.addServices(sd);
-		
-		ArrayList<AID> listReceiver = new ArrayList<>();
-		
+		//Object[] arg = {(ArrayList<Integer>) caseToSolve};
+		String name = "Analyseur" + (m_nbAnalyseurs++);
+			
 		try 
 		{
-			DFAgentDescription[] result = DFService.search(this, template, sc); 	
+			getContainerController().createNewAgent(name, "src.agents.Analyseur", null).start();
 			
-			if (result.length > 0 ) {
-				
-				for (int i = 0; i < result.length; i++) {		
-					listReceiver.add(result[i].getName());
-				}
-			}
+			return new AID(name, AID.ISLOCALNAME);
 		} 
-		catch (FIPAException fe) 
+		catch (StaleProxyException e) 
 		{
-			fe.printStackTrace();
-		}
+			e.printStackTrace();
+		}	
 		
-		return listReceiver;
+		return null;
 	}
 	
-	static public String typeService 	  = "Simuler";
-	static public String nameService 	  = "Sudoku";
+	private void killAgent(AID name) 
+	{
+		ACLMessage request = createAMSRequest();
+	    KillAgent  killer  = new KillAgent();
+	    
+	    killer.setAgent(name);
+	    
+	    Action act = new Action();
+	    
+	    act.setActor(getAMS());
+	    act.setAction(killer);
+	    
+	    try 
+	    {
+	    	//Register the SL content language
+	    	getContentManager().registerLanguage(new SLCodec(), FIPANames.ContentLanguage.FIPA_SL);
+
+	    	//Register the mobility ontology
+	    	getContentManager().registerOntology(JADEManagementOntology.getInstance());
+	    	
+	        getContentManager().fillContent(request, (ContentElement) act);
+	        
+	        FIPAService.doFipaRequestClient(this, request, 10000);
+	        
+	        System.out.println(getLocalName() + " request to kill " + name.getLocalName());
+	    } 
+	    catch (Exception e) 
+	    {
+	        e.printStackTrace();
+	    }
+	}
 	
-	private 	  int    m_period;
+	private ACLMessage createAMSRequest() 
+	{
+		ACLMessage request = new ACLMessage(ACLMessage.REQUEST);
+		
+		request.addReceiver(getAMS());
+		request.setProtocol(FIPANames.InteractionProtocol.FIPA_REQUEST);
+		request.setLanguage(FIPANames.ContentLanguage.FIPA_SL);
+		request.setOntology(JADEManagementOntology.getInstance().getName());
+		
+		return request;
+	}
+	
+	
+	static public  String typeService 	  = "Simuler";
+	static public  String nameService 	  = "Sudoku";
+	
+	
+	private int    m_period;
+	
+	//incremented after a new analyseur is created to keep the agent name unique
+	private int    m_nbAnalyseurs;
+	
+	//keep track of alive analyseur
+	private Vector<AID> m_aliveAnalyseur;
+	
 	// constant used to set max results of SearchConstraints
     private static Long MINUSONE = new Long(-1);
 }

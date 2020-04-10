@@ -1,4 +1,4 @@
-package mains;
+package src.mains;
 
 import jade.core.ProfileImpl;
 import jade.core.Runtime;
@@ -21,8 +21,8 @@ public class MainBoot {
 			AgentContainer mainContainer = rt.createMainContainer(p);
 
 			//Créer l'agent Simulateur
-			Object[] period = {(Integer) 2000};
-			AgentController simulateur = mainContainer.createNewAgent("Simulateur", "agents.Simulateur", period);
+			Object[] period = {(Integer) 5000};
+			AgentController simulateur = mainContainer.createNewAgent("Simulateur", "src.agents.Simulateur", period);
 
 			//Démarrer l'agent simulation
 			simulateur.start();

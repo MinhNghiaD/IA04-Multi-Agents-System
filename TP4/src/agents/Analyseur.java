@@ -1,4 +1,4 @@
-package agents;
+package src.agents;
 
 import java.util.ArrayList;
 import java.util.Random;
@@ -17,11 +17,12 @@ import jade.lang.acl.MessageTemplate;
 public class Analyseur extends Agent {
 
 	@Override
-	protected void setup() {
+	protected void setup() 
+	{
 		register();
 		
 		System.out.println("Agent " + getLocalName() + " init!");	
-		
+/*		
 		Object[] args = getArguments();
 		
 		if (args.length != 1)
@@ -30,12 +31,11 @@ public class Analyseur extends Agent {
 			
 			return;
 		}
-        
+     
 		m_case	   = (ArrayList<Integer>) args[0];
-		m_active   = false;
-        
-		addBehaviour(new RequestHandler());
-		addBehaviour(new updateEnv());
+ */         
+		addBehaviour(new Pong());
+		//addBehaviour(new updateEnv());
 	}
 	
 
@@ -54,11 +54,53 @@ public class Analyseur extends Agent {
 		}
 	}
 	
+	private class Pong extends CyclicBehaviour 
+	{
+		@Override
+		public void action() 
+		{
+			//Simulator use QUERY_IF as message type to perform health check
+			 MessageTemplate msgTemplate = MessageTemplate.MatchPerformative(ACLMessage.QUERY_IF);
+			 
+			 ACLMessage msg = receive(msgTemplate);
+			 
+			 if (msg != null) 
+			 { 
+				 try 
+				 {
+					 pong(msg); 
+				 } 
+				 catch (Exception e) 
+				 {
+					 System.out.println(getLocalName() + " : MESSAGE INVALIDÉ");
+				 } 
+			 }
+			 else
+			 {
+					block();
+			 }
+		}
+		
+		private void pong(ACLMessage request)
+		{
+			ACLMessage reply = request.createReply();
+			
+			reply.setPerformative(ACLMessage.INFORM);
+			
+			reply.setContent("Alive");
+			
+			send(reply);
+		}
+	}
+	
+	
 	/**
 	 * Classe requestHandler héritée de CyclicBehaviour
 	 * Cette classe est en charge de la réception des demandes du Simulateur et les traiter
 	 *
 	 */
+
+/*	
 	private class RequestHandler extends CyclicBehaviour 
 	{
 		@Override
@@ -108,8 +150,9 @@ public class Analyseur extends Agent {
 
 		send(reply);
 	}
-	
-	
+*/
+
+/*	
 	private class updateEnv extends OneShotBehaviour
 	{
 		@Override
@@ -161,7 +204,7 @@ public class Analyseur extends Agent {
 		
 		return receiver;
 	}
-	
+*/	
 	
 	/**
 	 * Inscrire simulateur a la page blanche pour avoir un AID valide
@@ -189,9 +232,8 @@ public class Analyseur extends Agent {
 		}
 	}
 	
-	static public String typeService 	  = "Analyser";
-	static public String nameService 	  = "Cell Value";	
+	static public String typeService = "Analyser";
+	static public String nameService = "Cell Value";	
 	
-	private Boolean m_active;
 	private ArrayList<Integer> m_case;	 
 }
