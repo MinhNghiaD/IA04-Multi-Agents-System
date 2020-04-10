@@ -8,6 +8,7 @@ import jade.domain.FIPAAgentManagement.DFAgentDescription;
 import jade.domain.FIPAAgentManagement.ServiceDescription;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
+import src.objects.Cell;
 
 public class Environnement extends Agent {
 
@@ -16,20 +17,21 @@ public class Environnement extends Agent {
 		register();
 		
 		System.out.println("Agent " + getLocalName() + " init!");	
-		
+/*		
 		Object[] args = getArguments();
 		
 		// Récupérer la grille sudoku passé en paramètre
-		/*
+
 		if (args.length != 1)
 		{
 			System.out.println("Faux Nombre d'arguments!");	
 			
 			return;
 		}    
-		*/    
+*/    
+		addBehaviour(new MainHandler());
 		
-		p_solution = false;
+		//p_solution = false;
 	}
 	
 
@@ -47,39 +49,6 @@ public class Environnement extends Agent {
 			e.printStackTrace();
 		}
 	}
-	
-	/**
-	 * Classe InformHandler héritée de CyclicBehaviour
-	 * Cette classe est en charge de la réception des mises à jour provenance d'agents Analyseur
-	 *
-	 */
-	private class InformtHandler extends CyclicBehaviour 
-	{
-		@Override
-		public void action() 
-		{
-			 MessageTemplate msgTemplate = MessageTemplate.MatchPerformative(ACLMessage.INFORM);
-			 
-			 ACLMessage msg = receive(msgTemplate);
-			 
-			 if (msg != null) 
-			 { 
-				 try 
-				 {
-					 System.out.println( getLocalName() + "reçoit de " + msg.getSender().getLocalName() + ". Message : " + msg.getContent()); 
-				 } 
-				 catch (Exception e) 
-				 {
-					 System.out.println(getLocalName() + " : MESSAGE INVALIDÉ");
-				 } 
-			 }
-			 else
-			 {
-					block();
-			 }
-		 }
-	}
-	
 	
 	/**
 	 * Inscrire simulateur a la page blanche pour avoir un AID valide
@@ -106,11 +75,46 @@ public class Environnement extends Agent {
 			fe.printStackTrace();
 		}
 	}
+	
+	/**
+	 * Classe MainHandler héritée de CyclicBehaviour
+	 * Cette classe est en charge de la réception des mises à jour provenance d'agents Analyseur
+	 *
+	 */
+	private class MainHandler extends CyclicBehaviour 
+	{
+		@Override
+		public void action() 
+		{
+			 MessageTemplate msgTemplate = MessageTemplate.MatchPerformative(ACLMessage.INFORM);
+			 
+			 ACLMessage msg = receive(msgTemplate);
+			 
+			 if (msg != null) 
+			 { 
+				 try 
+				 {
+					 System.out.println( getLocalName() + " receive from " + msg.getSender().getLocalName() + ". Message : " + msg.getContent());
+					 
+					 Cell cell = new Cell(msg.getContent());
+				 } 
+				 catch (Exception e) 
+				 {
+					 e.printStackTrace();
+				 } 
+			 }
+			 else
+			 {
+					block();
+			 }
+		 }
+	}
+	
+	
+	/*--------------------------------------Attributes---------------------------------------------*/
 		
 	static public String typeService 	  = "Update";
 	static public String nameService 	  = "Etat";
 	static public Boolean p_solution;
-	
-	
 
 }

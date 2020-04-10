@@ -52,6 +52,8 @@ public class Simulateur extends Agent {
 			
 			return;
 		}
+		
+		createEnvironnement();
         
 		//add 27 analyseurs
 		m_aliveAnalyseur = new Vector<AID>();
@@ -212,7 +214,6 @@ public class Simulateur extends Agent {
 	/**
 	 * Créer et démarrer l'agent Environnement
 	 */
-/*
 	private void createEnvironnement() 
 	{
 		try
@@ -224,7 +225,6 @@ public class Simulateur extends Agent {
 			ex.printStackTrace();
 		}
 	}
-*/
 	
 	/**
 	 * Créer et démarrer l'agent Analyseur
@@ -292,6 +292,7 @@ public class Simulateur extends Agent {
 		return request;
 	}
 	
+	/*---------------------------------------------- Attributes ----------------------------------------------*/
 	
 	static public  String typeService 	  = "Simuler";
 	static public  String nameService 	  = "Sudoku";
