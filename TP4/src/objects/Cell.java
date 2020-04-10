@@ -132,6 +132,16 @@ public class Cell
 	}
 	
 /* ---------------------------------------------------------------------------Accessors ----------------------------------------------------------------*/
+	public boolean equals(Cell other)
+	{
+		if ((other.getValue() == m_value) && (other.getPossibleValues().equals(m_possibleValues)))
+		{
+			return true;
+		}
+		
+		return false;
+	}
+	
 	public Vector<Integer> getPossibleValues()
 	{
 		return m_possibleValues;
@@ -210,6 +220,4 @@ public class Cell
 	private int 			m_value;
 	
 	private Vector<Integer> m_possibleValues;
-	private Semaphore 	    m_mutex = new Semaphore(1);
-	
 }

@@ -1,6 +1,5 @@
 package src.agents;
 
-import java.util.Date;
 import java.util.Map;
 import java.util.UUID;
 import java.util.Vector;
@@ -11,7 +10,6 @@ import jade.core.behaviours.CyclicBehaviour;
 import jade.domain.DFService;
 import jade.domain.FIPAException;
 import jade.domain.FIPAAgentManagement.DFAgentDescription;
-import jade.domain.FIPAAgentManagement.SearchConstraints;
 import jade.domain.FIPAAgentManagement.ServiceDescription;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
@@ -32,7 +30,7 @@ public class Environnement extends Agent {
 		
 		addBehaviour(new RequestHandler());
 		
-		m_sudoku = new Grill("data/sudoku1.res");
+		m_sudoku = new Grill("data/sudoku-diff1.res");
 		
 		distributedCells();
 	}
@@ -165,6 +163,8 @@ public class Environnement extends Agent {
 	{
 		Vector<AID> analyseurAIDs = searchAnalyseur();
 		
+		// Here we use only the amount of avalable Analyseur to solve the sudoku.
+		// The order is not important and the number of Analyseur is manage by Simulateur
 		m_nbWait = analyseurAIDs.size();
 		
 		int messageOrder = 0;

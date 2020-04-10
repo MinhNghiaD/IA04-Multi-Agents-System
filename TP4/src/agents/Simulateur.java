@@ -1,6 +1,5 @@
 package src.agents;
 
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.UUID;
 import java.util.Vector;
@@ -16,7 +15,6 @@ import jade.domain.FIPAException;
 import jade.domain.FIPANames;
 import jade.domain.FIPAService;
 import jade.domain.FIPAAgentManagement.DFAgentDescription;
-import jade.domain.FIPAAgentManagement.SearchConstraints;
 import jade.domain.FIPAAgentManagement.ServiceDescription;
 import jade.domain.JADEAgentManagement.JADEManagementOntology;
 import jade.domain.JADEAgentManagement.KillAgent;
@@ -274,7 +272,7 @@ public class Simulateur extends Agent {
 	        getContentManager().fillContent(request, (ContentElement) act);
 	        
 	        FIPAService.doFipaRequestClient(this, request, 10000);
-	        killAgent
+	        
 	        System.out.println(getLocalName() + " request to kill " + name.getLocalName());
 	    } 
 	    catch (Exception e) 
@@ -295,7 +293,7 @@ public class Simulateur extends Agent {
 		return request;
 	}
 	
-/*--------------------------------------------------------- Attributes -----------------------------------------------------*/
+/*---------------------------------------------- Attributes ----------------------------------------------*/
 	
 	static public  String typeService 	  = "Simuler";
 	static public  String nameService 	  = "Sudoku";
@@ -308,4 +306,7 @@ public class Simulateur extends Agent {
 	
 	//keep track of alive analyseur
 	private Vector<AID> m_aliveAnalyseur;
+	
+	// constant used to set max results of SearchConstraints
+    private static Long MINUSONE = new Long(-1);
 }

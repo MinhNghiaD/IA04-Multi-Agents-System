@@ -1,14 +1,13 @@
 package src.agents;
 
-import java.util.ArrayList;
+
+import java.util.HashMap;
 import java.util.Map;
-import java.util.Random;
+import java.util.Set;
 import java.util.Vector;
 
-import jade.core.AID;
 import jade.core.Agent;
 import jade.core.behaviours.CyclicBehaviour;
-import jade.core.behaviours.OneShotBehaviour;
 import jade.domain.DFService;
 import jade.domain.FIPAException;
 import jade.domain.FIPAAgentManagement.DFAgentDescription;
@@ -147,29 +146,6 @@ public class Analyseur extends Agent {
 		 }
 	}
 	
-	
-	private void process(Vector<Cell> cells)
-	{
-		Vector<Integer> stableValues = new Vector<Integer>();
-		
-		int value = 0;
-		
-		for (Cell cell : cells)
-		{
-			value = cell.getValue();
-			
-			if (value > 0)
-			{
-				stableValues.add(value);
-			}
-		}
-		
-		for (Cell cell : cells)
-		{
-			cell.eliminateStableValues(stableValues);
-		}
-	}
-	
 	private void handleRequest(ACLMessage msg)
 	{
 		 //analyze cells
@@ -193,6 +169,65 @@ public class Analyseur extends Agent {
 	   	 reply.setContent(Cell.mapToJson(map));
 			
 		 send(reply);
+	}
+	
+	private void process(Vector<Cell> cells)
+	{
+		Vector<Integer> stableValues = new Vector<Integer>();
+		
+		int value = 0;
+		
+		for (Cell cell : cells)
+		{
+			value = cell.getValue();
+			
+			if (value > 0)
+			{
+				stableValues.add(value);
+			}
+		}
+		
+		for (Cell cell : cells)
+		{
+			cell.eliminateStableValues(stableValues);
+		}
+		
+		for (int i = 2; i < (cells.size() - stableValues.size()); ++i)
+		{
+			advancedEliminate(cells, i);
+		}
+	}
+	
+	private void advancedEliminate(Vector<Cell> cells, int degree)
+	{	
+		for (int i = 0; i < cells.size(); ++i)
+		{
+			if (cells.elementAt(i).getPossibleValues().size() == degree)
+			{
+				Vector<Integer> similarIndex = new Vector<Integer>();
+				
+				similarIndex.add(i);
+				
+				for (int j = 0; j < cells.size(); ++j)
+				{
+					if (i != j && cells.elementAt(i).equals(cells.elementAt(j)))
+					{
+						similarIndex.add(j);
+					}
+				}
+				
+				if (similarIndex.size() == degree)
+				{
+					for (int k = 0; k < cells.size(); ++k)
+					{
+						if (! similarIndex.contains(k))
+						{
+							cells.elementAt(k).eliminateStableValues(cells.elementAt(i).getPossibleValues());
+						}
+					}
+				}
+			}
+		}
 	}
 	
 /*--------------------------------------------------------------Attributes----------------------------------------------------*/
