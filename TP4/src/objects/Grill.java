@@ -92,6 +92,33 @@ public class Grill
 		}
 	}
 	
+	public String cellsToJson(int high, int low, int left, int right)
+	{
+		Map<String, Object> map = null;
+		
+		// encode position of cells
+		map.put("high" , high);
+		map.put("low"  , low);
+		map.put("left" , left);
+		map.put("right", right);
+		
+		//encode values of cells
+		int counter = 0;
+		
+		for (int i = high; i <= low; ++i)
+		{
+			for (int j = left; j <= right; ++j)
+			{
+				map.put("cell"+counter, m_matrix.elementAt(i).elementAt(j).cellToJson());
+				
+				++counter;
+			}
+		}
+		
+		return Cell.mapToJson(map);
+	}
+	
+	
 	public boolean isFinished()
 	{
 		for (int i = 0; i < 9; ++i)
