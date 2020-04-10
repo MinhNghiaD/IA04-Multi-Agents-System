@@ -1,10 +1,14 @@
 package src.agents;
 
+import java.util.Vector;
+
+import jade.core.AID;
 import jade.core.Agent;
 import jade.core.behaviours.CyclicBehaviour;
 import jade.domain.DFService;
 import jade.domain.FIPAException;
 import jade.domain.FIPAAgentManagement.DFAgentDescription;
+import jade.domain.FIPAAgentManagement.SearchConstraints;
 import jade.domain.FIPAAgentManagement.ServiceDescription;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
@@ -17,21 +21,8 @@ public class Environnement extends Agent {
 		register();
 		
 		System.out.println("Agent " + getLocalName() + " init!");	
-/*		
-		Object[] args = getArguments();
-		
-		// Récupérer la grille sudoku passé en paramètre
 
-		if (args.length != 1)
-		{
-			System.out.println("Faux Nombre d'arguments!");	
-			
-			return;
-		}    
-*/    
 		addBehaviour(new MainHandler());
-		
-		//p_solution = false;
 	}
 	
 
@@ -110,11 +101,46 @@ public class Environnement extends Agent {
 		 }
 	}
 	
+	/**
+	 * Chercher les analyseurs via la page jaune
+	 * @return AID
+	 */
+	@SuppressWarnings("null")
+	private Vector<AID> searchAnalyseur() 
+	{
+		DFAgentDescription template = new DFAgentDescription();
+
+		ServiceDescription sd = new ServiceDescription();
+		sd.setType(Analyseur.typeService);
+		sd.setName(Analyseur.nameService);
+		
+		template.addServices(sd);
+
+		Vector<AID> listReceiver = new Vector<>();
+
+		try 
+		{
+			DFAgentDescription[] result = DFService.search(this, template, sc); 	
+
+			if (result.length > 0 ) {
+
+				for (int i = 0; i < result.length; i++) 
+				{		
+					listReceiver.add(result[i].getName());
+				}
+			}
+		} 
+		catch (FIPAException fe) 
+		{
+			fe.printStackTrace();
+		}
+
+		return listReceiver;
+	}
+	
 	
 	/*--------------------------------------Attributes---------------------------------------------*/
 		
 	static public String typeService 	  = "Update";
 	static public String nameService 	  = "Etat";
-	static public Boolean p_solution;
-
 }

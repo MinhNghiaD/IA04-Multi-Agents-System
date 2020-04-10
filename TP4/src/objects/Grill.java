@@ -42,6 +42,8 @@ public class Grill
 		    {
 		    	String data = parser.nextLine();
 		    	
+		    	System.out.println("read : " + data);
+		    	
 		    	Vector<Cell> row = new Vector<Cell>();
 		    	
 		    	for (int i = 0; i < data.length(); ++i)
@@ -145,7 +147,9 @@ public class Grill
 			
 			for (int j = 0; j < 9; ++j)
 			{
-				row += (m_matrix.elementAt(i).elementAt(j).getValue() + ' ');
+				row += (m_matrix.elementAt(i).elementAt(j).getValue());
+				
+				row += " ";
 			}
 			
 			System.out.println(row);

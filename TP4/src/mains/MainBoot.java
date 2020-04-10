@@ -5,6 +5,7 @@ import jade.core.Runtime;
 import jade.wrapper.AgentContainer;
 import jade.wrapper.AgentController;
 import jade.wrapper.ContainerController;
+import src.objects.Grill;
 import jade.core.Profile;
 
 public class MainBoot {
@@ -24,8 +25,12 @@ public class MainBoot {
 			Object[] period = {(Integer) 5000};
 			AgentController simulateur = mainContainer.createNewAgent("Simulateur", "src.agents.Simulateur", period);
 
+			Grill grill = new Grill("data/sudoku1.res");
+			
 			//Démarrer l'agent simulation
 			simulateur.start();
+			
+			
 		}
 		catch(Exception ex) 
 		{
