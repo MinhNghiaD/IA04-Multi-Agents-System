@@ -106,11 +106,6 @@ public class Grill
 	
 	public void updateCell(Cell cell, int x, int y)
 	{
-		if (m_states == null)
-		{
-			System.out.println("mstate is null");
-		}
-		
 		if (!m_states[x][y])
 		{
 			m_states[x][y] = m_matrix.elementAt(x).elementAt(y).updatePossbileValues(cell.getPossibleValues());

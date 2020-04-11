@@ -30,7 +30,7 @@ public class Environnement extends Agent {
 		
 		addBehaviour(new RequestHandler());
 		
-		m_sudoku = new Grill("data/sudoku-diff1.res");
+		m_sudoku = new Grill("data/sudoku-diff2.res");
 		
 		distributedCells();
 	}

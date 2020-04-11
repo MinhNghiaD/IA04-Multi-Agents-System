@@ -135,7 +135,6 @@ public class Analyseur extends Agent {
 				 } 
 				 catch (Exception e) 
 				 {
-					 System.out.println(getLocalName() + " : MESSAGE INVALIDÉ : " + msg.getContent());
 					 e.printStackTrace();
 				 } 
 			 }
@@ -196,6 +195,8 @@ public class Analyseur extends Agent {
 		{
 			advancedEliminate(cells, i);
 		}
+		
+		findUniqueValue(cells);
 	}
 	
 	private void advancedEliminate(Vector<Cell> cells, int degree)
@@ -225,6 +226,40 @@ public class Analyseur extends Agent {
 							cells.elementAt(k).eliminateStableValues(cells.elementAt(i).getPossibleValues());
 						}
 					}
+				}
+			}
+		}
+	}
+	
+	private void findUniqueValue(Vector<Cell> cells)
+	{
+		for (int i = 0; i < cells.size(); ++i)
+		{
+			Vector<Integer> vectorI = (Vector<Integer>) cells.elementAt(i).getPossibleValues().clone();
+			
+			if (vectorI != null)
+			{
+				for (int j = 0; j < cells.size(); ++j)
+				{
+					if (j != i)
+					{
+						Vector<Integer> vectorJ = cells.elementAt(j).getPossibleValues();
+						
+						if (vectorJ != null)
+						{
+							vectorI.removeAll(vectorJ);
+							
+							if (vectorI.isEmpty())
+							{	
+								break;
+							}
+						}
+					}
+				}
+				
+				if (vectorI.size() == 1)
+				{	
+					cells.elementAt(i).setPossibleValues(vectorI);
 				}
 			}
 		}

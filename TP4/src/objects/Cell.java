@@ -142,6 +142,11 @@ public class Cell
 		return false;
 	}
 	
+	public void setPossibleValues(Vector<Integer> values)
+	{
+		m_possibleValues = values;
+	}
+	
 	public Vector<Integer> getPossibleValues()
 	{
 		return m_possibleValues;
@@ -172,12 +177,17 @@ public class Cell
 		
 		m_possibleValues.removeAll(valuesToRemove);
 			
-		if (values.size() == 1)
+		if (m_possibleValues.size() == 1)
 		{
-			m_value = values.elementAt(0);
+			m_value = m_possibleValues.elementAt(0);
 			
 			m_possibleValues = null;
 			
+			return true;
+		}
+		
+		if (m_possibleValues.size() == 0)
+		{
 			return true;
 		}
 		
