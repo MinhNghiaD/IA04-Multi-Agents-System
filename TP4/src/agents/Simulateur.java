@@ -9,6 +9,7 @@ import jade.content.lang.sl.SLCodec;
 import jade.content.onto.basic.Action;
 import jade.core.AID;
 import jade.core.Agent;
+import jade.core.behaviours.CyclicBehaviour;
 import jade.core.behaviours.TickerBehaviour;
 import jade.domain.DFService;
 import jade.domain.FIPAException;
@@ -19,8 +20,10 @@ import jade.domain.FIPAAgentManagement.ServiceDescription;
 import jade.domain.JADEAgentManagement.JADEManagementOntology;
 import jade.domain.JADEAgentManagement.KillAgent;
 import jade.lang.acl.ACLMessage;
+import jade.lang.acl.MessageTemplate;
 import jade.proto.AchieveREInitiator;
 import jade.wrapper.StaleProxyException;
+import src.objects.Grill;
 
 public class Simulateur extends Agent {
 
@@ -68,6 +71,7 @@ public class Simulateur extends Agent {
 		}
 		
 		addBehaviour(new Ping(this, m_period)); 
+		addBehaviour(new RequestHandler());
 	}
 
 	@Override
@@ -111,6 +115,50 @@ public class Simulateur extends Agent {
 		}
 	}
 
+/*------------------------------------------------------------- Main Request handler ------------------------------------------------------*/
+	/**
+	 * Classe RequestSudoku héritée de CyclicBehaviour
+	 * Cette classe est en charge de la réception des message demande de entrée sudoku
+	 *
+	 */
+	private class RequestHandler extends CyclicBehaviour 
+	{
+		@Override
+		public void action() 
+		{
+			 MessageTemplate msgTemplate = MessageTemplate.MatchPerformative(ACLMessage.REQUEST);
+			 
+			 ACLMessage msg = receive(msgTemplate);
+			 
+			 if (msg != null) 
+			 { 
+				 try 
+				 {
+					 // forward to Environnement
+					 msg.clearAllReceiver();
+					 
+					 String id = UUID.randomUUID().toString();
+					 msg.setConversationId(id);
+							
+					 String mirt = "rqt" + System.currentTimeMillis();
+					 msg.setReplyWith(mirt);
+					 
+					 msg.addReceiver(searchEnvironnement());
+					 
+					 send(msg);
+				 } 
+				 catch (Exception e) 
+				 {
+					 e.printStackTrace();
+				 } 
+			 }
+			 else
+			 {
+					block();
+			 }
+		 }
+	}
+	
 /* ------------------------------------------------------------------------ Health check and control Analyseur---------------------------------*/
 	/**
 	 * Classe Ping héritée de TickerBehaviour
@@ -291,6 +339,37 @@ public class Simulateur extends Agent {
 		request.setOntology(JADEManagementOntology.getInstance().getName());
 		
 		return request;
+	}
+	
+	/**
+	 * Chercher Environnement via la page jaune
+	 * @return AID
+	 */
+	private AID searchEnvironnement() 
+	{
+		DFAgentDescription template = new DFAgentDescription();
+
+		ServiceDescription sd = new ServiceDescription();
+		sd.setType(Environnement.typeService);
+		sd.setName(Environnement.nameService);
+		
+		template.addServices(sd);
+
+		try 
+		{
+			DFAgentDescription[] result = DFService.search(this, template); 	
+
+			if (result.length > 0 ) 
+			{
+				return result[0].getName();
+			}
+		} 
+		catch (FIPAException fe) 
+		{
+			fe.printStackTrace();
+		}
+
+		return null;
 	}
 	
 /*---------------------------------------------- Attributes ----------------------------------------------*/

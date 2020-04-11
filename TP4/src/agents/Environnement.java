@@ -21,7 +21,8 @@ public class Environnement extends Agent {
 
 /* ----------------------------------------------------------------------Setup and tear down ----------------------------------------------*/
 	@Override
-	protected void setup() {
+	protected void setup() 
+	{
 		register();
 		
 		System.out.println("Agent " + getLocalName() + " init!");	
@@ -29,10 +30,6 @@ public class Environnement extends Agent {
 		//m_sudoku = new Grill();
 		
 		addBehaviour(new RequestHandler());
-		
-		m_sudoku = new Grill("data/sudoku-diff2.res");
-		
-		distributedCells();
 	}
 	
 
@@ -69,7 +66,6 @@ public class Environnement extends Agent {
 		try 
 		{
 			DFService.register(this, dfd);
-			
 		} 
 		catch (FIPAException fe) 
 		{
@@ -260,8 +256,8 @@ public class Environnement extends Agent {
 		{
 			DFAgentDescription[] result = DFService.search(this, template); 	
 
-			if (result.length > 0 ) {
-
+			if (result.length > 0 ) 
+			{
 				for (int i = 0; i < result.length; i++) 
 				{		
 					listReceiver.add(result[i].getName());

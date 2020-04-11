@@ -170,6 +170,7 @@ public class Analyseur extends Agent {
 		 send(reply);
 	}
 	
+/* ------------------------------------------------- Sudoku algorithms -----------------------------------------------*/
 	private void process(Vector<Cell> cells)
 	{
 		Vector<Integer> stableValues = new Vector<Integer>();
