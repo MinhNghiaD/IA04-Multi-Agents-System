@@ -1,4 +1,4 @@
-package src.objects;
+package objects;
 
 import java.io.File;
 import java.util.Map;

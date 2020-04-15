@@ -1,4 +1,4 @@
-package src.agents;
+package agents;
 
 import java.util.Map;
 import java.util.UUID;
@@ -14,8 +14,9 @@ import jade.domain.FIPAAgentManagement.ServiceDescription;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
 import jade.proto.AchieveREInitiator;
-import src.objects.Cell;
-import src.objects.Grill;
+
+import objects.Cell;
+import objects.Grill;
 
 public class Environnement extends Agent {
 

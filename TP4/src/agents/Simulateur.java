@@ -1,4 +1,4 @@
-package src.agents;
+package agents;
 
 import java.util.Date;
 import java.util.UUID;
@@ -23,7 +23,6 @@ import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
 import jade.proto.AchieveREInitiator;
 import jade.wrapper.StaleProxyException;
-import src.objects.Grill;
 
 public class Simulateur extends Agent {
 
@@ -208,7 +207,7 @@ public class Simulateur extends Agent {
 	
 	/**
 	 * Classe HealthCheck hérité de AchieveREInitiator
-	 * Elle attent le réponse seulement si elle vient d'envoyer un requete 
+	 * Elle attent la réponse seulement si elle vient d'envoyer une requete 
 	 */
 	private class HealthCheck extends AchieveREInitiator
 	{
@@ -223,10 +222,9 @@ public class Simulateur extends Agent {
 		@Override
 		protected void handleInform(ACLMessage msg)
 		{
-			//System.out.println(getLocalName() + " receive pong from " + msg.getSender());
-			
 			m_reponderAID.add(msg.getSender());
 		}
+		
 		
 		@Override
 		protected void handleAllResponses(Vector v) 
@@ -263,7 +261,7 @@ public class Simulateur extends Agent {
 	{
 		try
 		{
-			getContainerController().createNewAgent("Environnement", "src.agents.Environnement", null).start();
+			getContainerController().createNewAgent("Environnement", "agents.Environnement", null).start();
 		}
 		catch(Exception ex)
 		{
@@ -276,12 +274,11 @@ public class Simulateur extends Agent {
 	 */
 	private AID createAnalyseur() 
 	{
-		//Object[] arg = {(ArrayList<Integer>) caseToSolve};
 		String name = "Analyseur" + (m_nbAnalyseurs++);
 			
 		try 
 		{
-			getContainerController().createNewAgent(name, "src.agents.Analyseur", null).start();
+			getContainerController().createNewAgent(name, "agents.Analyseur", null).start();
 			
 			return new AID(name, AID.ISLOCALNAME);
 		} 

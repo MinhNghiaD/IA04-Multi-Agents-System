@@ -1,9 +1,7 @@
-package src.agents;
+package agents;
 
 
-import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 import java.util.Vector;
 
 import jade.core.Agent;
@@ -14,7 +12,7 @@ import jade.domain.FIPAAgentManagement.DFAgentDescription;
 import jade.domain.FIPAAgentManagement.ServiceDescription;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
-import src.objects.Cell;
+import objects.Cell;
 
 public class Analyseur extends Agent {
 
