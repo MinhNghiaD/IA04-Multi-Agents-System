@@ -54,7 +54,7 @@ public class BeingsWithUI extends GUIState {
 		
 	public void setupPortrayals() { 
 		Beings beings = (Beings) state;
-		yardPortrayal.setyard(beings.yard);
+		yardPortrayal.setField(beings.yard);
 		yardPortrayal.setPortrayalForClass(Ant.class, getAntPortrayal());
 		yardPortrayal.setPortrayalForClass(Food.class, getFoodPortrayal());
 		
