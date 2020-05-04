@@ -3,6 +3,7 @@ package model;
 import agent.Food;
 import agent.Ant;
 import sim.engine.SimState;
+import sim.engine.Stoppable;
 import sim.field.grid.SparseGrid2D;
 import sim.util.Int2D;
 
@@ -28,11 +29,16 @@ public class Beings extends SimState {
 	/***
 	 * Distribuer aléatoirement les Antes sur le champ
 	 */
-	private void addFood() {
+	public void addFood() {
 		for(int i = 0; i < Constants.NUM_FOOD_CELL; i++){
+
+			if (i == 0) {
+				Food.remainFood = Constants.MAX_FOOD;
+			}
+			
 			Food a = new Food();
 			Int2D location = getFreeLocation(); 
-			yard.setObjectLocation(a,location.x,location.y);  
+			yard.setObjectLocation(a,location.x,location.y);
 			a.setX(location.x);
 			a.setY(location.y); 
 			schedule.scheduleRepeating(a);
@@ -51,7 +57,8 @@ public class Beings extends SimState {
 			yard.setObjectLocation(a,location.x,location.y); 
 			a.setX(location.x);
 			a.setY(location.y); 
-			schedule.scheduleRepeating(a);
+			Stoppable stoppable = schedule.scheduleRepeating(a); 
+			a.stoppable = stoppable;
 		}	
 	}
 

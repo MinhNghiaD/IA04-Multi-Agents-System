@@ -1,18 +1,28 @@
 package agent;
 
+import model.Beings;
 import sim.engine.SimState;
 import sim.engine.Steppable;
 
 public class Food implements Steppable{
+	
+	public static int remainFood;
+	
+	private Beings model;
+	
 	public Food() {
-		// TODO Auto-generated constructor stub
 	}
 	
 	
 	@Override
 	public void step(SimState arg0) {
-		// TODO Auto-generated method stub
-		
+		if ( remainFood == 0 ) {
+			model.addFood();
+		}
+	}
+	
+	public void decreaseFood() {
+		--remainFood;
 	}
 	
 	public int getX() {
@@ -33,4 +43,13 @@ public class Food implements Steppable{
 	
 	private int x;
 	private int y;
+
+	public void remove(Beings beings) {
+		remainFood -= 1;
+		beings.yard.remove(this);
+		
+		if (remainFood == 0) {
+			beings.addFood();
+		}
+	}
 }
