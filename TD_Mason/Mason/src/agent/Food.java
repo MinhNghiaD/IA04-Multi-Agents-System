@@ -1,25 +1,16 @@
 package agent;
 
 import model.Beings;
-import sim.engine.SimState;
-import sim.engine.Steppable;
 
-public class Food implements Steppable{
+public class Food {
 	
-	public static int remainFood;
-	
+	private int remainFood;
 	private Beings model;
 	
-	public Food() {
+	public Food(int nbFood) {
+		this.remainFood = nbFood;
 	}
 	
-	
-	@Override
-	public void step(SimState arg0) {
-		if ( remainFood == 0 ) {
-			model.addFood();
-		}
-	}
 	
 	public void decreaseFood() {
 		--remainFood;
@@ -31,6 +22,10 @@ public class Food implements Steppable{
 	
 	public int getY() {
 		return y;
+	}
+	
+	public int getRemainFood() {
+		return remainFood;
 	}
 	
 	public void setX(int x) {
@@ -45,10 +40,12 @@ public class Food implements Steppable{
 	private int y;
 
 	public void remove(Beings beings) {
+		
 		remainFood -= 1;
-		beings.yard.remove(this);
+		System.out.println("Food remove at ["+ this.x + ", " +this.y +"]. Remain : " + remainFood);
 		
 		if (remainFood == 0) {
+			beings.yard.remove(this);
 			beings.addFood();
 		}
 	}
