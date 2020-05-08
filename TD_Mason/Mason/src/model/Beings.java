@@ -27,23 +27,18 @@ public class Beings extends SimState
 		
 		yard.clear(); 
 		
-		addAnts();
-		addFoodGroup();
+		for(int i = 0; i < Constants.NUM_INSECT; i++)
+		{
+			addAnt(i + 1);
+		}	
 		
-		numInsects = Constants.NUM_INSECT;
-	}
-	
-	
-	
-	private void addFoodGroup() 
-	{
 		for(int i = 0; i < Constants.NUM_FOOD_CELL; i++)
 		{
 			addFood();
 		}
 		
+		numInsects = Constants.NUM_INSECT;
 	}
-
 
 	/***
 	 * Distribuer aléatoirement les Antes sur le champ
@@ -51,15 +46,11 @@ public class Beings extends SimState
 	public void addFood() 
 	{
 		int   nbFood   = this.random.nextInt(Constants.MAX_FOOD) + 1;
-		Food  a        = new Food(nbFood);
-		Int2D location = getFreeLocation(); 
+		
+		Int2D location = getFreeLocation();
+		Food  a        = new Food(nbFood, this, location);
 		
 		yard.setObjectLocation(a, location.x, location.y);
-		
-		a.setX(location.x);
-		a.setY(location.y); 
-		
-		System.out.println("Food add at ["+ location.x + ", " +location.y +"]. Stock : " + a.getRemainFood());
 	}	
 		
 
@@ -67,24 +58,16 @@ public class Beings extends SimState
 	/***
 	 * Distribuer aléatoirement la nourriture sur le champ
 	 */
-	private void addAnts() 
+	private void addAnt(int nb) 
 	{
-		for(int i = 0; i < Constants.NUM_INSECT; i++)
-		{
-			Ant a 		   = new Ant();
-			Int2D location = getFreeLocation(); 
-			
-			yard.setObjectLocation(a, location.x, location.y); 
-			
-			a.setX(location.x);
-			a.setY(location.y); 
-			
-			a.setnumero(i + 1);
-			
-			Stoppable stoppable = schedule.scheduleRepeating(a); 
-			
-			a.stoppable = stoppable;
-		}	
+		Int2D location = getFreeLocation(); 
+		Ant a 		   = new Ant(location, nb);
+		
+		yard.setObjectLocation(a, location.x, location.y); 
+		
+		Stoppable stoppable = schedule.scheduleRepeating(a); 
+		
+		a.stoppable = stoppable;
 	}
 
 	

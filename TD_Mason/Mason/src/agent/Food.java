@@ -1,62 +1,40 @@
 package agent;
 
 import model.Beings;
+import sim.util.Int2D;
 
 public class Food {
 	
-	private int    remainFood;
-	private int    x;
-	private int    y;
+	private int    amount;
+	Int2D 		   location;
 	
-	private Beings model;
+	private Beings environment;
 	
-	
-	public Food(int nbFood) 
+	public Food(int nbFood, Beings environment, Int2D location) 
 	{
-		remainFood = nbFood;
+		this.amount      = nbFood;
+		this.environment = environment;
+		this.location    = location;
+		
+		System.out.println("Food add at ["+ location.x + ", " +location.y +"]. Stock = " + amount);
 	}
 	
-	
-	public void decreaseFood() 
-	{
-		--remainFood;
-	}
-	
-	public int getX() 
-	{
-		return x;
-	}
-	
-	public int getY() 
-	{
-		return y;
-	}
-	
-	public int getRemainFood() 
-	{
-		return remainFood;
-	}
-	
-	public void setX(int x) 
-	{
-		this.x = x;
-	}
-	
-	public void setY(int y) 
-	{
-		this.y = y;
-	}
-	
-	public void remove(Beings beings) 
+	public int remove(int amount) 
 	{	
-		remainFood -= 1;
-		
-		System.out.println("Food remove at ["+ this.x + ", " +this.y +"]. Remain : " + remainFood);
-		
-		if (remainFood == 0) 
+		if (amount >= this.amount)
 		{
-			beings.yard.remove(this);
-			beings.addFood();
+			environment.yard.remove(this);
+			environment.addFood();
+			
+			System.out.println("Food at ["+ location.x + ", " + location.y +"] runs out");
+			
+			return this.amount;
 		}
+		
+		this.amount -= amount;
+		
+		System.out.println("Food at ["+ location.x + ", " +location.y +"] remains : " + this.amount);
+		
+		return amount;
 	}
 }
