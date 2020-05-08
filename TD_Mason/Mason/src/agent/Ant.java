@@ -4,9 +4,11 @@ import model.Beings;
 import model.Constants;
 import sim.util.Bag;
 import sim.util.Int2D;
+import sim.util.IntBag;
 import sim.engine.SimState;
 import sim.engine.Steppable;
 import sim.engine.Stoppable;
+import sim.field.grid.Grid2D;
 import sim.field.grid.SparseGrid2D;
 
 public class Ant implements Steppable {
@@ -16,18 +18,19 @@ public class Ant implements Steppable {
 	private final int MAX_X;
 	private final int MAX_Y;
 	
-	private int x;
-	private int y;
-	private int xdir;
-	private int ydir;
-	private int energy;
-	private int nbLoad;
-	private int numero;
+	private 	  int x;
+	private 	  int y;
+	private 	  int xdir;
+	private 	  int ydir;
+	private 	  int energy;
+	private 	  int nbLoad;
+	private 	  int numero;
 	
-	public Stoppable stoppable;
+	public Stoppable  stoppable;
 	
 	public Ant() 
 	{
+		// TODO :  init these variables
 		DISTANCE_DEPLACEMENT = 5;
 		DISTANCE_PERCEPTION  = 5;
 		MAX_X 				 = Constants.GRID_SIZE - 1;
@@ -48,7 +51,7 @@ public class Ant implements Steppable {
 		{
 			if (energy == 0) 
 			{
-				suicide(beings);
+				die(beings);
 			} 
 			else 
 			{
@@ -80,7 +83,7 @@ public class Ant implements Steppable {
 						if (energy  < Constants.MAX_ENERGY && 
 						    nbLoad == Constants.MAX_LOAD) 
 						{
-							while (food.getRemainFood() > 0  && 
+							while (food.getRemainFood() > 0 && 
 							       energy 			    < Constants.MAX_ENERGY) 
 							{
 								eatFood(food, beings);
@@ -119,15 +122,13 @@ public class Ant implements Steppable {
 									loadFood(food, beings);
 								}
 							}
-							
 						}
-							
 					}
 				} else {
 					if (energy < (Constants.MAX_ENERGY - Constants.FOOD_ENERGY) && 
 					    nbLoad > 0) 
 					{
-						consumeLoad();
+						eatLoad();
 					}
 					
 					Int2D posClosetFood = getPosClosestFood(posAnt, yard);
@@ -149,13 +150,75 @@ public class Ant implements Steppable {
 		}
 		
 	}
+	
+	private void die(SimState state) 
+	{	
+		Beings beings = (Beings) state;
 		
-	private void consumeLoad() 
+		beings.yard.remove(this);  
+		beings.decNumInsects();
+		
+		stoppable.stop();
+		
+		System.out.println("Ant["+ this.numero +"] die!!!!");
+	}
+	
+	private void see(SimState state)
+	{
+		// TODO get matrix from simulation
+		Beings beings = (Beings) state;
+		
+		IntBag xPos = new IntBag();
+		IntBag yPos = new IntBag();
+		
+		beings.yard.getMooreLocations(x, y, DISTANCE_PERCEPTION, Grid2D.BOUNDED, false, xPos, yPos);
+		
+		for (int i = 0; i < xPos.size(); ++i)
+		{
+			int objX = xPos.get(i);
+			int objY = yPos.get(i);
+			
+			Bag bag = beings.yard.getObjectsAtLocation(objX, objY);
+			
+			if (bag.numObjs > 1) 
+			{
+				for (Object obj : bag) 
+				{
+					if ( obj instanceof Food ) 
+					{
+						// TODO food detected
+					}
+					
+					if (obj instanceof Ant)
+					{
+						// TODO ant detected
+					}
+				}
+			}
+		}
+	}
+	
+		
+	private void eatLoad() 
 	{
 		nbLoad -= 1;
 		energy += Constants.FOOD_ENERGY;
 		
 		System.out.println("---> Ant[" + numero + "] eat Load \n");
+	}
+	
+	private void eatFood(Food food, Beings beings) 
+	{
+		energy += Constants.FOOD_ENERGY;
+		
+		if (energy > Constants.MAX_ENERGY) 
+		{
+			energy = Constants.MAX_ENERGY;
+		}
+		
+		food.remove(beings);
+		
+		System.out.println("---> Ant[" + this.numero + "] Eat food \n");
 	}
 
 	private void moveToFood(Int2D posClosetFood, Beings beings) 
@@ -166,19 +229,7 @@ public class Ant implements Steppable {
 		energy--;
 	}
 
-	private void eatFood(Food food, Beings beings) 
-	{
-		System.out.println("---> Ant[" + this.numero + "] Eat food \n");
-		
-		energy += Constants.FOOD_ENERGY;
-		
-		if (energy > Constants.MAX_ENERGY) 
-		{
-			energy = Constants.MAX_ENERGY;
-		}
-		
-		food.remove(beings);
-	}
+	
 
 	private void loadFood(Food food, Beings beings) 
 	{
@@ -265,17 +316,7 @@ public class Ant implements Steppable {
 		return null;
 	}
 
-	private void suicide(SimState state) 
-	{
-		System.out.println("Ant["+ this.numero +"]SUICIDE!!!!");
-		
-		Beings beings = (Beings) state;
-		
-		beings.yard.remove(this);  
-		beings.decNumInsects();
-		
-		stoppable.stop();
-	}
+	
 	
 	
 	
@@ -328,7 +369,6 @@ public class Ant implements Steppable {
 			}
 		}
 		
-		
 		// déplacer l'insecte
 		int tempx = x + xdir;
 		int tempy = y + ydir;
@@ -352,9 +392,6 @@ public class Ant implements Steppable {
 		
 		energy--;	
 	}
-
-	
-	
 	
 	private void changeLocation(int tempx, int tempy, Beings beings) 
 	{
