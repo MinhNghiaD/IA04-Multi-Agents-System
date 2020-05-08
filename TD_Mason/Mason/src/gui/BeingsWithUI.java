@@ -17,33 +17,43 @@ import sim.portrayal.Portrayal;
 import sim.portrayal.grid.SparseGridPortrayal2D;
 import sim.portrayal.simple.OvalPortrayal2D;
 
-public class BeingsWithUI extends GUIState {
-	public Display2D display;
-	public JFrame displayFrame;
+public class BeingsWithUI extends GUIState 
+{
+	public  Display2D 		 	  display;
+	public  JFrame          	  displayFrame;
 	private SparseGridPortrayal2D yardPortrayal = new SparseGridPortrayal2D();
 	
-	public BeingsWithUI(SimState state) {
+	public BeingsWithUI(SimState state) 
+	{
 	    super(state);
-	  }
+	}
 	
-	public static String getName() {
+	public static String getName()
+	{
 	   return "ants Simulation";
 	}
 	
-	public void start() { 
+	public void start() 
+	{ 
 		super.start(); 
+		
 		setupPortrayals();
 	}
 	
-	public void load(SimState state) {
+	public void load(SimState state) 
+	{
 		super.load(state);
+		
 		setupPortrayals();
 	}
 
-	public void init(Controller c) {
+	public void init(Controller c) 
+	{
 		super.init(c);
+		
 		display = new Display2D(Constants.FRAME_SIZE, Constants.FRAME_SIZE,this);
 		display.setClipping(false);
+		
 		displayFrame = display.createFrame();
 		displayFrame.setTitle("Number of ants"); 
 		c.registerFrame(displayFrame); // so the frame appears in the "Display"
@@ -52,8 +62,10 @@ public class BeingsWithUI extends GUIState {
 		display.attach( yardPortrayal, "yard" );
 	}
 		
-	public void setupPortrayals() { 
+	public void setupPortrayals() 
+	{ 
 		Beings beings = (Beings) state;
+		
 		yardPortrayal.setField(beings.yard);
 		yardPortrayal.setPortrayalForClass(Ant.class, getAntPortrayal());
 		yardPortrayal.setPortrayalForClass(Food.class, getFoodPortrayal());
@@ -61,30 +73,38 @@ public class BeingsWithUI extends GUIState {
 		display.reset(); 
 		display.setBackdrop(Color.LIGHT_GRAY); 
 		display.repaint();
-		 
 	}
 
-	private Portrayal getFoodPortrayal() {
+	private Portrayal getFoodPortrayal() 
+	{
 		OvalPortrayal2D r = new OvalPortrayal2D(); 
-		r.paint = Color.ORANGE;
-		r.filled = true;
+		
+		r.paint  		  = Color.ORANGE;
+		r.filled		  = true;
+		
 		return r;
 	}
 
-	private Portrayal getAntPortrayal() {
+	private Portrayal getAntPortrayal() 
+	{
 		OvalPortrayal2D r = new OvalPortrayal2D(); 
-		r.paint = Color.BLACK;
-		r.filled = true;
+		
+		r.paint 		  = Color.BLACK;
+		r.filled		  = true;
+		
 		return r;
 	} 
 	
-	public Object getSimulationInspectedObject()  {  
+	public Object getSimulationInspectedObject()  
+	{  
 		return state;  
 	}
 	
-	public Inspector getInspector() {
+	public Inspector getInspector() 
+	{
 		Inspector i = super.getInspector();
 		i.setVolatile(true);
+		
 		return  i;
 	}
 }

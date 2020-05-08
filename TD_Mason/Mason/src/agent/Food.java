@@ -4,47 +4,57 @@ import model.Beings;
 
 public class Food {
 	
-	private int remainFood;
+	private int    remainFood;
+	private int    x;
+	private int    y;
+	
 	private Beings model;
 	
-	public Food(int nbFood) {
-		this.remainFood = nbFood;
+	
+	public Food(int nbFood) 
+	{
+		remainFood = nbFood;
 	}
 	
 	
-	public void decreaseFood() {
+	public void decreaseFood() 
+	{
 		--remainFood;
 	}
 	
-	public int getX() {
+	public int getX() 
+	{
 		return x;
 	}
 	
-	public int getY() {
+	public int getY() 
+	{
 		return y;
 	}
 	
-	public int getRemainFood() {
+	public int getRemainFood() 
+	{
 		return remainFood;
 	}
 	
-	public void setX(int x) {
+	public void setX(int x) 
+	{
 		this.x = x;
 	}
 	
-	public void setY(int y) {
+	public void setY(int y) 
+	{
 		this.y = y;
 	}
 	
-	private int x;
-	private int y;
-
-	public void remove(Beings beings) {
-		
+	public void remove(Beings beings) 
+	{	
 		remainFood -= 1;
+		
 		System.out.println("Food remove at ["+ this.x + ", " +this.y +"]. Remain : " + remainFood);
 		
-		if (remainFood == 0) {
+		if (remainFood == 0) 
+		{
 			beings.yard.remove(this);
 			beings.addFood();
 		}

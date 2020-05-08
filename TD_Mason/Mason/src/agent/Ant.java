@@ -26,65 +26,96 @@ public class Ant implements Steppable {
 	
 	public Stoppable stoppable;
 	
-	public Ant() {
+	public Ant() 
+	{
 		DISTANCE_DEPLACEMENT = 5;
-		DISTANCE_PERCEPTION = 5;
-		MAX_X = Constants.GRID_SIZE - 1;
-		MAX_Y = Constants.GRID_SIZE - 1;
+		DISTANCE_PERCEPTION  = 5;
+		MAX_X 				 = Constants.GRID_SIZE - 1;
+		MAX_Y 				 = Constants.GRID_SIZE - 1;
 		
-		this.energy = Constants.MAX_ENERGY;
-		this.nbLoad = 0;
+		energy 		 		 = Constants.MAX_ENERGY;
+		nbLoad 		 		 = 0;
 	}
 
 	@Override
-	public void step(SimState state) {
-		Beings beings = (Beings) state;
-		SparseGrid2D yard = beings.yard;
-		Int2D posAnt = yard.getObjectLocation(this);
+	public void step(SimState state) 
+	{
+		Beings 		 beings = (Beings) state;
+		SparseGrid2D yard   = beings.yard;
+		Int2D		 posAnt = yard.getObjectLocation(this);
 		 
-		if (beings.getNumInsects() > 0) {
-			if (energy == 0) {
+		if (beings.getNumInsects() > 0)
+		{
+			if (energy == 0) 
+			{
 				suicide(beings);
-			} else {
+			} 
+			else 
+			{
 				Food food = hasFoodInCell(posAnt, yard);
 				
-				if (food != null) {
+				if (food != null) 
+				{
 					System.out.print("has Food ---");
 					
-					if (this.energy == Constants.MAX_ENERGY && this.nbLoad == Constants.MAX_LOAD) {
+					if (energy == Constants.MAX_ENERGY && 
+					    nbLoad == Constants.MAX_LOAD) 
+					{
 						System.out.println("---> move to next food\n");
+						
 						moveToFood(getPosClosestFood(posAnt, yard), beings);
-					} else {
-						if (this.energy == Constants.MAX_ENERGY && this.nbLoad < Constants.MAX_LOAD) {
-							while (food.getRemainFood() > 0 && this.nbLoad < Constants.MAX_LOAD) {
+					} 
+					else 
+					{
+						if (energy == Constants.MAX_ENERGY && 
+						    nbLoad  < Constants.MAX_LOAD) 
+						{
+							while (food.getRemainFood() > 0 && 
+								   nbLoad 				< Constants.MAX_LOAD) 
+							{
 								loadFood(food, beings);
 							}
 						}
 						
-						if (this.energy < Constants.MAX_ENERGY && this.nbLoad == Constants.MAX_LOAD) {
-							while (food.getRemainFood() > 0 && this.energy < Constants.MAX_ENERGY) {
+						if (energy  < Constants.MAX_ENERGY && 
+						    nbLoad == Constants.MAX_LOAD) 
+						{
+							while (food.getRemainFood() > 0  && 
+							       energy 			    < Constants.MAX_ENERGY) 
+							{
 								eatFood(food, beings);
 							}
 						}
 						
-						if (this.energy < Constants.MAX_ENERGY && this.nbLoad < Constants.MAX_LOAD) {
+						if (energy < Constants.MAX_ENERGY && 
+						    nbLoad < Constants.MAX_LOAD) 
+						{
 							
-							if (food.getRemainFood() >= 2) {
+							if (food.getRemainFood() >= 2) 
+							{
 								do {
-									if (this.nbLoad < Constants.MAX_LOAD) {
+									if (nbLoad < Constants.MAX_LOAD) {
 										loadFood(food, beings);
 									}
 									
-									if (this.energy < Constants.MAX_ENERGY) {
+									if (energy < Constants.MAX_ENERGY) 
+									{
 										eatFood(food, beings);
 									}
 									
-								} while (food.getRemainFood() == 0 || (this.energy == Constants.MAX_ENERGY && this.nbLoad == Constants.MAX_LOAD));
+								} 
+								while (food.getRemainFood() == 0   || 
+									  (energy == Constants.MAX_ENERGY && nbLoad == Constants.MAX_LOAD));
 								
-							} else {
-								if (this.energy <= ((int) Constants.MAX_ENERGY / 2)) {
+							} 
+							else 
+							{
+								if (energy <= ((int) Constants.MAX_ENERGY / 2)) 
+								{
 									eatFood(food, beings);
-								} else {
+								} 
+								else 
+								{
 									loadFood(food, beings);
 								}
 							}
@@ -93,87 +124,112 @@ public class Ant implements Steppable {
 							
 					}
 				} else {
-					if (this.energy < Constants.MAX_ENERGY - Constants.FOOD_ENERGY && this.nbLoad > 0) {
+					if (energy < (Constants.MAX_ENERGY - Constants.FOOD_ENERGY) && 
+					    nbLoad > 0) 
+					{
 						consumeLoad();
 					}
 					
 					Int2D posClosetFood = getPosClosestFood(posAnt, yard);
 					
-					if ( posClosetFood != null ) {
+					if ( posClosetFood != null ) 
+					{
 						moveToFood(posClosetFood, beings);
-					} else {
+					} 
+					else
+					{
 						moveRandom(beings);
 					}
 				}
 			}
-		} else {
+		} 
+		else 
+		{
 			beings.finish();
 		}
 		
 	}
 		
-	private void consumeLoad() {
-		this.nbLoad -= 1;
-		this.energy += Constants.FOOD_ENERGY;
-		System.out.println("---> Ant[" + this.numero + "] eat Load \n");
+	private void consumeLoad() 
+	{
+		nbLoad -= 1;
+		energy += Constants.FOOD_ENERGY;
+		
+		System.out.println("---> Ant[" + numero + "] eat Load \n");
 	}
 
-	private void moveToFood(Int2D posClosetFood, Beings beings) {
-		System.out.print("Ant["+this.numero+"] Move to food ");
+	private void moveToFood(Int2D posClosetFood, Beings beings) 
+	{
+		System.out.print("Ant[" + numero + "] Move to food ");
+		
 		changeLocation(posClosetFood.x, posClosetFood.y, beings);
 		energy--;
-		
 	}
 
-	private void eatFood(Food food, Beings beings) {
+	private void eatFood(Food food, Beings beings) 
+	{
 		System.out.println("---> Ant[" + this.numero + "] Eat food \n");
-		this.energy += Constants.FOOD_ENERGY;
 		
-		if (this.energy > Constants.MAX_ENERGY) {
-			this.energy = Constants.MAX_ENERGY;
+		energy += Constants.FOOD_ENERGY;
+		
+		if (energy > Constants.MAX_ENERGY) 
+		{
+			energy = Constants.MAX_ENERGY;
 		}
+		
 		food.remove(beings);
 	}
 
-	private void loadFood(Food food, Beings beings) {
-		System.out.println("---> Ant[" + this.numero + "] Load food \n");
-		this.nbLoad += 1;
+	private void loadFood(Food food, Beings beings) 
+	{
+		System.out.println("---> Ant[" + numero + "] Load food \n");
+		
+		nbLoad++;
 		food.remove(beings);
 	}
 
 	
-	private Int2D getPosClosestFood(Int2D posAnt, SparseGrid2D yard) {
-		
+	private Int2D getPosClosestFood(Int2D posAnt, SparseGrid2D yard) 
+	{	
 		System.out.print("Ant["+this.numero+"] getPosClosestFood---");
 		
-		int high = DISTANCE_PERCEPTION;
-		int low = DISTANCE_PERCEPTION * -1;
-		int right = DISTANCE_PERCEPTION;
-		int left = DISTANCE_PERCEPTION * -1;
+		int    high    = DISTANCE_PERCEPTION;
+		int    low     = DISTANCE_PERCEPTION * (-1);
+		int    right   = DISTANCE_PERCEPTION;
+		int    left    = DISTANCE_PERCEPTION * (-1);
 		double minDist = Double.POSITIVE_INFINITY;
+		
 		Int2D posClosestFood = null;
 		
-		for (int i = low; i <= high; i++) {
-			for (int j = left; j <= right; j++) {
+		for (int i = low; i <= high; i++) 
+		{
+			for (int j = left; j <= right; j++) 
+			{
 				int testx = posAnt.x + i;
 				int testy = posAnt.y + j;
 				
-				if (testx > MAX_X) {
+				if (testx > MAX_X) 
+				{
 					testx = MAX_X;
 				}
 				
-				if (testy > MAX_Y) {
+				if (testy > MAX_Y) 
+				{
 					testy = MAX_Y;
 				}
 				
-				if (testx != this.x && testy != this.y) {
+				if (testx != this.x && testy != this.y) 
+				{
 					Int2D posCell = new Int2D(testx, testy);
-					Food food = hasFoodInCell(posCell, yard);
+					Food  food    = hasFoodInCell(posCell, yard);
 
-					if (food != null) {
+					if (food != null) 
+					{
 						System.out.println("---Food in zone---");
-						if (posAnt.distance(posCell) < minDist) {
-							minDist = posAnt.distance(posCell);
+						
+						if (posAnt.distance(posCell) < minDist) 
+						{
+							minDist        = posAnt.distance(posCell);
 							posClosestFood = posCell;
 						}
 					}		
@@ -181,23 +237,27 @@ public class Ant implements Steppable {
 			}
 		}
 		
-		if (posClosestFood != null) {
+		if (posClosestFood != null) 
+		{
 			System.out.println("PosClosestFood : " + posClosestFood.toCoordinates());
 		}
 		
 		return posClosestFood;
 	}
 
-	private Food hasFoodInCell(Int2D posAnt, SparseGrid2D yard) {
-		
+	private Food hasFoodInCell(Int2D posAnt, SparseGrid2D yard) 
+	{	
 		Bag bag = yard.getObjectsAtLocation(posAnt.x, posAnt.y);
 		
 		if (bag == null || (bag.numObjs <= 0)) return null;
 		
-		if (bag.numObjs > 1) {
-			for (Object o : bag) {
-				if ( o instanceof Food ) {
-					return (Food) o;
+		if (bag.numObjs > 1) 
+		{
+			for (Object obj : bag) 
+			{
+				if ( obj instanceof Food ) 
+				{
+					return (Food) obj;
 				}
 			}
 		}
@@ -205,79 +265,103 @@ public class Ant implements Steppable {
 		return null;
 	}
 
-	private void suicide(SimState state) {
+	private void suicide(SimState state) 
+	{
 		System.out.println("Ant["+ this.numero +"]SUICIDE!!!!");
+		
 		Beings beings = (Beings) state;
+		
 		beings.yard.remove(this);  
 		beings.decNumInsects();
+		
 		stoppable.stop();
 	}
 	
 	
 	
-	public void moveRandom(Beings beings){
+	public void moveRandom(Beings beings)
+	{
 		System.out.println("move Random");
 		
 		// générer aléatoire des directions pour ne pas franchîr la frontière et la distance de déplacement
-		if (this.x == 0) {
+		if (x == 0) 
+		{
 			// 0 <= xdir <= DISTANCE_DEPLACEMENT
-			this.xdir = beings.random.nextInt(DISTANCE_DEPLACEMENT + 1);
-		} else if (this.x == MAX_X) {
+			xdir = beings.random.nextInt(DISTANCE_DEPLACEMENT + 1);
+		} 
+		else if (x == MAX_X) 
+		{
 			// -DISTANCE_DEPLACEMENT <= xdir <= 0
-			this.xdir = beings.random.nextInt(DISTANCE_DEPLACEMENT + 1) * - 1;
-		} else {
+			xdir = beings.random.nextInt(DISTANCE_DEPLACEMENT + 1) * (-1);
+		} 
+		else 
+		{
 			// -DISTANCE_DEPLACEMENT <= xdir <= DISTANCE_DEPLACEMENT
-			this.xdir = beings.random.nextInt(DISTANCE_DEPLACEMENT + 1) * (beings.random .nextBoolean() ? -1 : 1);
+			xdir = beings.random.nextInt(DISTANCE_DEPLACEMENT + 1) * (beings.random .nextBoolean() ? -1 : 1);
 		}
 		
-		if (this.y == 0) {
-			this.ydir = beings.random.nextInt(DISTANCE_DEPLACEMENT + 1);
+		if (y == 0) 
+		{
+			ydir = beings.random.nextInt(DISTANCE_DEPLACEMENT + 1);
 			
-			while(this.ydir == 0  && this.xdir == 0) {
-				this.ydir = beings.random.nextInt(DISTANCE_DEPLACEMENT + 1);
+			while(ydir == 0  && xdir == 0) 
+			{
+				ydir = beings.random.nextInt(DISTANCE_DEPLACEMENT + 1);
 			}
-		} else if (this.y == MAX_Y) {
-			this.ydir = beings.random.nextInt(DISTANCE_DEPLACEMENT + 1) * - 1;
+		}
+		else if (y == MAX_Y) 
+		{
+			ydir = beings.random.nextInt(DISTANCE_DEPLACEMENT + 1) * (-1);
 			
-			while(this.ydir == 0  && this.xdir == 0) {
-				this.ydir = beings.random.nextInt(DISTANCE_DEPLACEMENT + 1) * - 1;
+			while(ydir == 0  && xdir == 0) 
+			{
+				ydir = beings.random.nextInt(DISTANCE_DEPLACEMENT + 1) * (-1);
 			}
-		} else {
-			this.ydir = beings.random.nextInt(DISTANCE_DEPLACEMENT + 1) * (beings.random .nextBoolean() ? -1 : 1);
+		} 
+		else 
+		{
+			ydir = beings.random.nextInt(DISTANCE_DEPLACEMENT + 1) * (beings.random .nextBoolean() ? -1 : 1);
 			
-			while(this.ydir == 0  && this.xdir == 0) {
-				this.ydir = beings.random.nextInt(DISTANCE_DEPLACEMENT + 1) * (beings.random .nextBoolean() ? -1 : 1);
+			while(ydir == 0  && xdir == 0) 
+			{
+				ydir = beings.random.nextInt(DISTANCE_DEPLACEMENT + 1) * (beings.random .nextBoolean() ? -1 : 1);
 			}
 		}
 		
 		
 		// déplacer l'insecte
-		int tempx = this.x + this.xdir;
-		int tempy = this.y + this.ydir;
+		int tempx = x + xdir;
+		int tempy = y + ydir;
 		
-		if ( tempx > MAX_X) {
+		if (tempx > MAX_X) 
+		{
 			tempx = MAX_X;
 		}
 		
-		if ( tempx < 0) {
+		if (tempx < 0) 
+		{
 			tempx = 0;
 		}
 		
-		if ( tempy < 0) {
+		if (tempy < 0)
+		{
 			tempy = 0;
 		}
 		
 		changeLocation(tempx, tempy, beings);
+		
 		energy--;	
 	}
 
 	
 	
 	
-	private void changeLocation(int tempx, int tempy, Beings beings) {
+	private void changeLocation(int tempx, int tempy, Beings beings) 
+	{
 		beings.yard.stx(tempx);
 		beings.yard.sty(tempy);
 		beings.yard.setObjectLocation(this, tempx, tempy);
+		
 		this.x = tempx;
 		this.y = tempy;
 		
@@ -285,42 +369,53 @@ public class Ant implements Steppable {
 	}
 	
 	
-	public int getnumero() {
+	public int getnumero() 
+	{
 		return numero;
-		}
+	}
 	
-	public void setnumero(int numero) {
-		this.numero = numero; }
+	public void setnumero(int numero) 
+	{
+		this.numero = numero; 
+	}
 
-	public int getX() {
+	public int getX() 
+	{
 		return x;
 	}
 	
-	public int getY() {
+	public int getY() 
+	{
 		return y;
 	}
 	
-	public void setX(int x) {
+	public void setX(int x) 
+	{
 		this.x = x;
 	}
 	
-	public void setY(int y) {
+	public void setY(int y) 
+	{
 		this.y = y;
 	}
 	
-	public void setXdir(int xdir) {
+	public void setXdir(int xdir) 
+	{
 		this.xdir = xdir;
 	}
 	
-	public void setYdir(int ydir) {
+	public void setYdir(int ydir) 
+	{
 		this.ydir = ydir;
 	}
 	
-	public int getXdir() {
+	public int getXdir() 
+	{
 		return xdir;
 	}
 	
-	public int getYdir() {
+	public int getYdir() 
+	{
 		return ydir;
 	}
 	
