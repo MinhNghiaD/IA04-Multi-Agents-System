@@ -37,4 +37,9 @@ public class Food {
 		
 		return amount;
 	}
+	
+	public Int2D location()
+	{
+		return location;
+	}
 }

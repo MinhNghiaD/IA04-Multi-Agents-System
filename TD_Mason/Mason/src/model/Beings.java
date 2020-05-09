@@ -26,7 +26,7 @@ public class Beings extends SimState
 		super.start(); 
 		
 		yard.clear(); 
-		
+	
 		for(int i = 0; i < Constants.NUM_INSECT; i++)
 		{
 			addAnt(i + 1);
@@ -61,7 +61,7 @@ public class Beings extends SimState
 	private void addAnt(int nb) 
 	{
 		Int2D location = getFreeLocation(); 
-		Ant a 		   = new Ant(location, nb);
+		Ant a 		   = new Ant(location, nb, 3, 3, 4);
 		
 		yard.setObjectLocation(a, location.x, location.y); 
 		

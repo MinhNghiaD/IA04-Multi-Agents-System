@@ -15,6 +15,7 @@ public class Ant implements Steppable {
 	
 	private final int DISTANCE_DEPLACEMENT;
 	private final int DISTANCE_PERCEPTION;
+	private final int CHARGE_MAX;
 	
 	private 	  int numero;
 	private       int x;
@@ -33,7 +34,7 @@ public class Ant implements Steppable {
 	
 	public Stoppable  stoppable;
 	
-	public Ant(Int2D location, int nb) 
+	public Ant(Int2D location, int nb, int movePoint, int visionPoint, int loadPoint) 
 	{
 		x       			 = location.x;
 		y					 = location.y;
@@ -43,8 +44,9 @@ public class Ant implements Steppable {
 		
 		
 		// TODO :  init these variables
-		DISTANCE_DEPLACEMENT = 5;
-		DISTANCE_PERCEPTION  = 5;
+		DISTANCE_DEPLACEMENT = movePoint;
+		DISTANCE_PERCEPTION  = visionPoint;
+		CHARGE_MAX			 = loadPoint;
 		
 		energy 		 		 = Constants.MAX_ENERGY;
 		nbLoad 		 		 = 0;
@@ -58,51 +60,173 @@ public class Ant implements Steppable {
 		// TODO 
 		trategy(beings);
 		
-		
+		System.out.println("Ant["+ this.numero +"] anergy left " + energy);
 		if (energy == 0) 
 		{
-			//die(beings);
+			die(beings);
 		} 
 	}
 	
 	private void trategy(Beings being)
 	{
+		Food food = getNearbyFood(being);
+		
+		// if have food nearby
+		if (food != null)
+		{
+			int amount = amountCanEat();
+			
+			if (amount > 0)
+			{
+				 eat(food, amount); 
+			}
+			else
+			{
+				// move to food for charging
+				move(food.location, being);
+			}
+			
+			return;
+		}
+		
+		// try to load food
+		if (loadFood(being))
+		{
+			return;
+		}
+		
+		// eat load
+		if ((energy == 1 && nbLoad > 0) || (nbLoad == CHARGE_MAX && amountCanEat() > 0))
+		{
+			eat(amountCanEat());
+		
+			return;	
+		}
+		
+		// go to new location
 		// Observation
 		IntBag xPos   = new IntBag();
 		IntBag yPos   = new IntBag();
-/*
-		see(being, xPos, yPos);
+
+		Bag objects = see(being, xPos, yPos);
+				
+		int index = closestPoint(xPos, yPos);
+		
+		if (index > -1)
+		{
+			move(optimiestLocation(xPos.get(index), yPos.get(index)), being);
+		}
+		else
+		{
+			move(getRandomPosition(Constants.GRID_SIZE), being);
+		}
+	}
+	
+	
+	private int closestPoint(IntBag xPos, IntBag yPos)
+	{
+		int distance2 = (Constants.GRID_SIZE * 2);
+		int index     = -1;
 		
 		for (int i = 0; i < xPos.size(); ++i)
 		{
-			int objX = xPos.get(i);
-			int objY = yPos.get(i);
-					
-			Bag bag = being.yard.getObjectsAtLocation(objX, objY);
-					
-			if (bag.numObjs > 1) 
+			if ((xPos.get(i) - x) + (yPos.get(i) - y)  < distance2)
 			{
-				for (Object obj : bag) 
-				{
-					if ( obj instanceof Food ) 
-					{
-						// TODO food detected
-					}
-							
-					if (obj instanceof Ant)
-					{
-						// TODO ant detected
-					}
-				}
+				distance2 = (xPos.get(i) - x) + (yPos.get(i) - y);
+				index     = i;
 			}
 		}
-*/		
-		move(getRandomPosition(Constants.GRID_SIZE), being);
+		
+		return index;
 	}
 	
-	private void see(Beings state, IntBag xPos, IntBag yPos)
+	private Int2D optimiestLocation(int xFood, int yFood)
 	{
-		state.yard.getMooreLocations(x, x, DISTANCE_PERCEPTION, Grid2D.BOUNDED, false, xPos, yPos);
+		int xPos, yPos;
+		
+		if (xFood > x)
+		{
+			if (xFood > (x + DISTANCE_DEPLACEMENT + 1))
+			{
+				xPos = x + DISTANCE_DEPLACEMENT;
+			}
+			else
+			{
+				xPos = xFood - 1;
+			}
+		}
+		else
+		{
+			if (xFood < (x - DISTANCE_DEPLACEMENT - 1))
+			{
+				xPos = x - DISTANCE_DEPLACEMENT;
+			}
+			else
+			{
+				xPos = xFood + 1;
+			}
+		}
+		
+		if (yFood > y)
+		{
+			if (yFood > (y + DISTANCE_DEPLACEMENT + 1))
+			{
+				yPos = y + DISTANCE_DEPLACEMENT;
+			}
+			else
+			{
+				yPos = yFood - 1;
+			}
+		}
+		else
+		{
+			if (yFood < (y - DISTANCE_DEPLACEMENT - 1))
+			{
+				yPos = y - DISTANCE_DEPLACEMENT;
+			}
+			else
+			{
+				yPos = yFood + 1;
+			}
+		}
+		
+		return (new Int2D(xPos, yPos));
+	}
+	
+	
+	
+	
+	
+	private Bag see(Beings state, IntBag xPos, IntBag yPos)
+	{
+		Bag objects = new Bag();
+		
+		state.yard.getMooreNeighborsAndLocations(x, y, DISTANCE_PERCEPTION, Grid2D.BOUNDED, objects, xPos, yPos);
+
+		int i = 0;
+		
+		while (i < objects.size())
+		{
+			if (objects.get(i) instanceof Ant)
+			{
+				objects.remove(i);
+				xPos.remove(i);
+				yPos.remove(i);
+			}
+			else
+			{
+				++i;
+			}
+		}
+/*	
+		System.out.println("Ant at [" + x + ", " + y + "] detects:");
+		
+		for (int i = 0; i < objects.size(); ++i)
+		{
+			System.out.println("objects at locations x = "+ xPos.get(i) + " y = " + yPos.get(i));
+		}
+*/
+		return objects;
 	}
 
 	private void die(Beings state) 
@@ -125,23 +249,17 @@ public class Ant implements Steppable {
 		IntBag xPos   = new IntBag();
 		IntBag yPos   = new IntBag();
 		
-		state.yard.getMooreLocations(x, x, 1, Grid2D.BOUNDED, false, xPos, yPos);
+		Bag objects = new Bag();
 		
-		for (int i = 0; i < xPos.size(); ++i)
+		state.yard.getMooreNeighborsAndLocations(x, y, 1, Grid2D.BOUNDED, objects, xPos, yPos);
+		
+		for (int i = 0; i < objects.size(); ++i)
 		{
-			int objX = xPos.get(i);
-			int objY = yPos.get(i);
-			
-			Bag bag = state.yard.getObjectsAtLocation(objX, objY);
-			
-			if (bag.numObjs == 1) 
-			{
-				for (Object obj : bag) 
+			if ((objects.get(i) instanceof Food) && (xPos.get(i) != x || yPos.get(i) != y))
+			{	
+				if (xPos.get(i) != x || yPos.get(i) != y)
 				{
-					if ( obj instanceof Food ) 
-					{
-						return (Food) obj;
-					}
+					return (Food) objects.get(i);
 				}
 			}
 		}
@@ -178,27 +296,66 @@ public class Ant implements Steppable {
 		
 		energy += (amount * Constants.FOOD_ENERGY);
 		
-		System.out.println("---> Ant[" + numero + "] eat " + amount + " Load \n");
+		System.out.println("---> Ant[" + numero + "] eat " + amount + " Load, amount of load left = " + nbLoad + "\n");
 	}
 	
 	
-	private int canEatFood()
+	private int amountCanEat()
 	{
 		return (Constants.MAX_ENERGY - energy) / Constants.FOOD_ENERGY;
 	}
 	
-	private void loadFood(Food food)
+	private boolean loadFood(Beings being)
 	{
+		// test if have food at the same location
+		if (!canLoad())
+		{
+			return false;
+		}
+		
+		Bag objects = being.yard.getObjectsAtLocation(x, y);
+		
+		Food food   = null;
+		
+		for (int i = 0; i < objects.size(); ++i)
+		{
+			if ((objects.get(i) instanceof Food))
+			{	
+				food = (Food) objects.get(i);
+				
+				break;
+			}
+		}
+		
+		if (food == null)
+		{
+			return false;
+		}
+		
 		// try to load 1 unit of food at a time
 		int amount = food.consume(1);
+		
+		if (amount <= 0)
+		{
+			return false;
+		}
 		
 		nbLoad += amount;
 				
 		System.out.println("---> Ant[" + numero + "] Load " + amount + " food \n");
+		
+		return true;
+	}
+	
+	private boolean canLoad()
+	{
+		return (CHARGE_MAX > nbLoad);
 	}
 	
 	private void move(Int2D location, Beings beings)
 	{
+		int oldX = x, oldY = y;
+		
 		if (location.x <= 0)
 		{
 			x = 1;
@@ -234,7 +391,7 @@ public class Ant implements Steppable {
 		
 		--energy;
 		
-		System.out.println("---> Ant[" + numero + "] moves to (" + x + ", " + y + ").");
+		System.out.println("---> Ant[" + numero + "] moves from (" + oldX + ", " + oldY + ") to (" + x + ", " + y + ").");
 	}
 	
 	
