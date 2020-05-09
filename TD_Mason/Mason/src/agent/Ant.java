@@ -16,12 +16,12 @@ public class Ant implements Steppable {
 	private final int DISTANCE_DEPLACEMENT;
 	private final int DISTANCE_PERCEPTION;
 	
-	private final int MAX_X;
-	private final int MAX_Y;
-	
 	private 	  int numero;
 	private       int x;
 	private 	  int y;
+	
+	private       int directionX;
+	private       int directionY;
 	
 	//private 	  int xdir;
 	//private 	  int ydir;
@@ -39,11 +39,12 @@ public class Ant implements Steppable {
 		y					 = location.y;
 		numero   			 = nb;
 		
+		directionX = directionY = 1;
+		
+		
 		// TODO :  init these variables
 		DISTANCE_DEPLACEMENT = 5;
 		DISTANCE_PERCEPTION  = 5;
-		MAX_X 				 = Constants.GRID_SIZE - 1;
-		MAX_Y 				 = Constants.GRID_SIZE - 1;
 		
 		energy 		 		 = Constants.MAX_ENERGY;
 		nbLoad 		 		 = 0;
@@ -54,146 +55,31 @@ public class Ant implements Steppable {
 	{
 		Beings beings = (Beings) state;
 		
-		Int2D location = new Int2D(x + 1, y + 1);
+		// TODO 
+		trategy(beings);
 		
-		move(location, beings);
 		
-		
-/*		 
-		if (beings.getNumInsects() > 0)
+		if (energy == 0) 
 		{
-			if (energy == 0) 
-			{
-				die(beings);
-			} 
-			else 
-			{
-				Food food = hasFoodInCell(posAnt, yard);
-				
-				if (food != null) 
-				{
-					System.out.print("has Food ---");
-					
-					if (energy == Constants.MAX_ENERGY && 
-					    nbLoad == Constants.MAX_LOAD) 
-					{
-						System.out.println("---> move to next food\n");
-						
-						moveToFood(getPosClosestFood(posAnt, yard), beings);
-					} 
-					else 
-					{
-						if (energy == Constants.MAX_ENERGY && 
-						    nbLoad  < Constants.MAX_LOAD) 
-						{
-							while (food.getRemainFood() > 0 && 
-								   nbLoad 				< Constants.MAX_LOAD) 
-							{
-								loadFood(food, beings);
-							}
-						}
-						
-						if (energy  < Constants.MAX_ENERGY && 
-						    nbLoad == Constants.MAX_LOAD) 
-						{
-							while (food.getRemainFood() > 0 && 
-							       energy 			    < Constants.MAX_ENERGY) 
-							{
-								eatFood(food, beings);
-							}
-						}
-						
-						if (energy < Constants.MAX_ENERGY && 
-						    nbLoad < Constants.MAX_LOAD) 
-						{
-							
-							if (food.getRemainFood() >= 2) 
-							{
-								do {
-									if (nbLoad < Constants.MAX_LOAD) {
-										loadFood(food, beings);
-									}
-									
-									if (energy < Constants.MAX_ENERGY) 
-									{
-										eatFood(food, beings);
-									}
-									
-								} 
-								while (food.getRemainFood() == 0   || 
-									  (energy == Constants.MAX_ENERGY && nbLoad == Constants.MAX_LOAD));
-								
-							} 
-							else 
-							{
-								if (energy <= ((int) Constants.MAX_ENERGY / 2)) 
-								{
-									eatFood(food, beings);
-								} 
-								else 
-								{
-									loadFood(food, beings);
-								}
-							}
-						}
-					}
-				} else {
-					if (energy < (Constants.MAX_ENERGY - Constants.FOOD_ENERGY) && 
-					    nbLoad > 0) 
-					{
-						eatLoad();
-					}
-					
-					Int2D posClosetFood = getPosClosestFood(posAnt, yard);
-					
-					if ( posClosetFood != null ) 
-					{
-						moveToFood(posClosetFood, beings);
-					} 
-					else
-					{
-						moveRandom(beings);
-					}
-				}
-			}
+			//die(beings);
 		} 
-		else 
-		{
-			beings.finish();
-		}
-*/		
 	}
 	
-	private void trategy()
+	private void trategy(Beings being)
 	{
-		// TODO implement strategy
-	}
-
-	private void die(Beings state) 
-	{	
-		state.yard.remove(this);  
-		state.decNumInsects();
-		
-		stoppable.stop();
-		
-		System.out.println("Ant["+ this.numero +"] die!!!!");
-	}
-	
-	private void see(Beings state)
-	{
-		// TODO get matrix from simulation
+		// Observation
 		IntBag xPos   = new IntBag();
 		IntBag yPos   = new IntBag();
-
-		state.yard.getMooreLocations(x, x, DISTANCE_PERCEPTION, Grid2D.BOUNDED, false, xPos, yPos);
+/*
+		see(being, xPos, yPos);
 		
 		for (int i = 0; i < xPos.size(); ++i)
 		{
 			int objX = xPos.get(i);
 			int objY = yPos.get(i);
-			
-			Bag bag = state.yard.getObjectsAtLocation(objX, objY);
-			
+					
+			Bag bag = being.yard.getObjectsAtLocation(objX, objY);
+					
 			if (bag.numObjs > 1) 
 			{
 				for (Object obj : bag) 
@@ -202,7 +88,7 @@ public class Ant implements Steppable {
 					{
 						// TODO food detected
 					}
-					
+							
 					if (obj instanceof Ant)
 					{
 						// TODO ant detected
@@ -210,6 +96,23 @@ public class Ant implements Steppable {
 				}
 			}
 		}
+*/		
+		move(getRandomPosition(Constants.GRID_SIZE), being);
+	}
+	
+	private void see(Beings state, IntBag xPos, IntBag yPos)
+	{
+		state.yard.getMooreLocations(x, x, DISTANCE_PERCEPTION, Grid2D.BOUNDED, false, xPos, yPos);
+	}
+
+	private void die(Beings state) 
+	{	
+		state.yard.remove(this);  
+		stoppable.stop();
+		
+		System.out.println("Ant["+ this.numero +"] die!!!!");
+		
+		state.removeAnt();
 	}
 	
 	/**
@@ -296,8 +199,31 @@ public class Ant implements Steppable {
 	
 	private void move(Int2D location, Beings beings)
 	{
-		x = beings.yard.stx(location.x);
-		y = beings.yard.sty(location.y);
+		if (location.x <= 0)
+		{
+			x = 1;
+		}
+		else if (location.x >= beings.yard.getHeight())
+		{
+			x = beings.yard.getHeight() - 1;
+		}
+		else
+		{
+			x = location.x;
+		}
+		
+		if (location.y <= 0)
+		{
+			y = 1;
+		}
+		else if (location.y >= beings.yard.getWidth())
+		{
+			y = beings.yard.getWidth() - 1;
+		}
+		else
+		{
+			y = location.y;
+		}
 		
 		if (! beings.yard.setObjectLocation(this, x, y))
 		{
@@ -306,176 +232,43 @@ public class Ant implements Steppable {
 			return;
 		}
 		
+		--energy;
+		
 		System.out.println("---> Ant[" + numero + "] moves to (" + x + ", " + y + ").");
 	}
 	
-		
-/*	
-		
-
-	private void moveToFood(Int2D foodLoca, Beings beings) 
+	
+	Int2D getRandomPosition(int gridSize)
 	{
-		System.out.print("Ant[" + numero + "] Move to food ");
+		int distanceX =  (int) (Math.random() * (DISTANCE_DEPLACEMENT - 1));
+		int distanceY =  (int) (Math.random() * (DISTANCE_DEPLACEMENT - 1));
 		
-		changeLocation(posClosetFood.x, posClosetFood.y, beings);
-		energy--;
+		int newX      = x + directionX * distanceX;
+		int newY	  = y + directionY * distanceY;
+		
+		// need to avoid the corners in order to find food
+		if (newX <= 0)
+		{
+			// change direction
+			directionX = 1;
+		}
+		else if (newX >= (gridSize - 1))
+		{
+			directionX = -1;
+		}
+		
+		if (newY <= 0)
+		{
+			directionY = 1;
+		}
+		else if (newY >= (gridSize - 1))
+		{
+			directionY = -1;
+		}
+		
+		newX = x + directionX * distanceX;
+		newY = y + directionY * distanceY;
+		
+		return (new Int2D(newX, newY));
 	}
-
-	
-
-
-	
-	private Int2D getPosClosestFood(Int2D posAnt, SparseGrid2D yard) 
-	{	
-		System.out.print("Ant["+this.numero+"] getPosClosestFood---");
-		
-		int    high    = DISTANCE_PERCEPTION;
-		int    low     = DISTANCE_PERCEPTION * (-1);
-		int    right   = DISTANCE_PERCEPTION;
-		int    left    = DISTANCE_PERCEPTION * (-1);
-		double minDist = Double.POSITIVE_INFINITY;
-		
-		Int2D posClosestFood = null;
-		
-		for (int i = low; i <= high; i++) 
-		{
-			for (int j = left; j <= right; j++) 
-			{
-				int testx = posAnt.x + i;
-				int testy = posAnt.y + j;
-				
-				if (testx > MAX_X) 
-				{
-					testx = MAX_X;
-				}
-				
-				if (testy > MAX_Y) 
-				{
-					testy = MAX_Y;
-				}
-				
-				if (testx != this.x && testy != this.y) 
-				{
-					Int2D posCell = new Int2D(testx, testy);
-					Food  food    = hasFoodInCell(posCell, yard);
-
-					if (food != null) 
-					{
-						System.out.println("---Food in zone---");
-						
-						if (posAnt.distance(posCell) < minDist) 
-						{
-							minDist        = posAnt.distance(posCell);
-							posClosestFood = posCell;
-						}
-					}		
-				}
-			}
-		}
-		
-		if (posClosestFood != null) 
-		{
-			System.out.println("PosClosestFood : " + posClosestFood.toCoordinates());
-		}
-		
-		return posClosestFood;
-	}
-
-	private Food hasFoodInCell(Int2D posAnt, SparseGrid2D yard) 
-	{	
-		Bag bag = yard.getObjectsAtLocation(posAnt.x, posAnt.y);
-		
-		if (bag == null || (bag.numObjs <= 0)) return null;
-		
-		if (bag.numObjs > 1) 
-		{
-			for (Object obj : bag) 
-			{
-				if ( obj instanceof Food ) 
-				{
-					return (Food) obj;
-				}
-			}
-		}
-		
-		return null;
-	}
-
-	
-	
-	
-	
-	public void moveRandom(Beings beings)
-	{
-		System.out.println("move Random");
-		
-		// générer aléatoire des directions pour ne pas franchîr la frontière et la distance de déplacement
-		if (x == 0) 
-		{
-			// 0 <= xdir <= DISTANCE_DEPLACEMENT
-			xdir = beings.random.nextInt(DISTANCE_DEPLACEMENT + 1);
-		} 
-		else if (x == MAX_X) 
-		{
-			// -DISTANCE_DEPLACEMENT <= xdir <= 0
-			xdir = beings.random.nextInt(DISTANCE_DEPLACEMENT + 1) * (-1);
-		} 
-		else 
-		{
-			// -DISTANCE_DEPLACEMENT <= xdir <= DISTANCE_DEPLACEMENT
-			xdir = beings.random.nextInt(DISTANCE_DEPLACEMENT + 1) * (beings.random .nextBoolean() ? -1 : 1);
-		}
-		
-		if (y == 0) 
-		{
-			ydir = beings.random.nextInt(DISTANCE_DEPLACEMENT + 1);
-			
-			while(ydir == 0  && xdir == 0) 
-			{
-				ydir = beings.random.nextInt(DISTANCE_DEPLACEMENT + 1);
-			}
-		}
-		else if (y == MAX_Y) 
-		{
-			ydir = beings.random.nextInt(DISTANCE_DEPLACEMENT + 1) * (-1);
-			
-			while(ydir == 0  && xdir == 0) 
-			{
-				ydir = beings.random.nextInt(DISTANCE_DEPLACEMENT + 1) * (-1);
-			}
-		} 
-		else 
-		{
-			ydir = beings.random.nextInt(DISTANCE_DEPLACEMENT + 1) * (beings.random .nextBoolean() ? -1 : 1);
-			
-			while(ydir == 0  && xdir == 0) 
-			{
-				ydir = beings.random.nextInt(DISTANCE_DEPLACEMENT + 1) * (beings.random .nextBoolean() ? -1 : 1);
-			}
-		}
-		
-		// déplacer l'insecte
-		int tempx = x + xdir;
-		int tempy = y + ydir;
-		
-		if (tempx > MAX_X) 
-		{
-			tempx = MAX_X;
-		}
-		
-		if (tempx < 0) 
-		{
-			tempx = 0;
-		}
-		
-		if (tempy < 0)
-		{
-			tempy = 0;
-		}
-		
-		changeLocation(tempx, tempy, beings);
-		
-		energy--;	
-	}
-*/	
 }

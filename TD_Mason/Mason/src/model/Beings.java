@@ -86,20 +86,14 @@ public class Beings extends SimState
 		
 		return location;
 	}
-	
-	
-	public int getNumInsects() 
-	{
-		return numInsects;
-	}
-
-	public void setNumInsects(int numInsects) 
-	{
-		this.numInsects = numInsects;
-	}
-	
-	public void decNumInsects() 
+		
+	public void removeAnt() 
 	{
 		--numInsects;
+		
+		if (numInsects == 0)
+		{
+			finish();
+		}
 	}
 }
