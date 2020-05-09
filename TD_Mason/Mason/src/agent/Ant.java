@@ -15,21 +15,28 @@ public class Ant implements Steppable {
 	
 	private final int DISTANCE_DEPLACEMENT;
 	private final int DISTANCE_PERCEPTION;
+	
 	private final int MAX_X;
 	private final int MAX_Y;
 	
-	private     Int2D position;			
-	private 	  int xdir;
-	private 	  int ydir;
+	private 	  int numero;
+	private       int x;
+	private 	  int y;
+	
+	//private 	  int xdir;
+	//private 	  int ydir;
+	
 	private 	  int energy;
 	private 	  int nbLoad;
-	private 	  int numero;
+	
+	
 	
 	public Stoppable  stoppable;
 	
 	public Ant(Int2D location, int nb) 
 	{
-		position 			 = location;
+		x       			 = location.x;
+		y					 = location.y;
 		numero   			 = nb;
 		
 		// TODO :  init these variables
@@ -45,9 +52,13 @@ public class Ant implements Steppable {
 	@Override
 	public void step(SimState state) 
 	{
-		Beings 		 beings = (Beings) state;
-		SparseGrid2D yard   = beings.yard;
-		Int2D		 posAnt = yard.getObjectLocation(this);
+		Beings beings = (Beings) state;
+		
+		Int2D location = new Int2D(x + 1, y + 1);
+		
+		move(location, beings);
+		
+		
 /*		 
 		if (beings.getNumInsects() > 0)
 		{
@@ -153,34 +164,35 @@ public class Ant implements Steppable {
 */		
 	}
 	
-	private void die(SimState state) 
+	private void trategy()
+	{
+		// TODO implement strategy
+	}
+
+	private void die(Beings state) 
 	{	
-		Beings beings = (Beings) state;
-		
-		beings.yard.remove(this);  
-		beings.decNumInsects();
+		state.yard.remove(this);  
+		state.decNumInsects();
 		
 		stoppable.stop();
 		
 		System.out.println("Ant["+ this.numero +"] die!!!!");
 	}
 	
-	private void see(SimState state)
+	private void see(Beings state)
 	{
 		// TODO get matrix from simulation
-		Beings beings = (Beings) state;
-		
-		IntBag xPos = new IntBag();
-		IntBag yPos = new IntBag();
-		
-		beings.yard.getMooreLocations(position.x, position.x, DISTANCE_PERCEPTION, Grid2D.BOUNDED, false, xPos, yPos);
+		IntBag xPos   = new IntBag();
+		IntBag yPos   = new IntBag();
+
+		state.yard.getMooreLocations(x, x, DISTANCE_PERCEPTION, Grid2D.BOUNDED, false, xPos, yPos);
 		
 		for (int i = 0; i < xPos.size(); ++i)
 		{
 			int objX = xPos.get(i);
 			int objY = yPos.get(i);
 			
-			Bag bag = beings.yard.getObjectsAtLocation(objX, objY);
+			Bag bag = state.yard.getObjectsAtLocation(objX, objY);
 			
 			if (bag.numObjs > 1) 
 			{
@@ -199,29 +211,107 @@ public class Ant implements Steppable {
 			}
 		}
 	}
-/*	
-		
-	private void eatLoad() 
-	{
-		nbLoad -= 1;
-		energy += Constants.FOOD_ENERGY;
-		
-		System.out.println("---> Ant[" + numero + "] eat Load \n");
-	}
 	
-	private void eatFood(Food food, Beings beings) 
+	/**
+	 * 
+	 * @param state : return the next to food
+	 * @return
+	 */
+	private Food getNearbyFood(Beings state)
 	{
-		energy += Constants.FOOD_ENERGY;
+		IntBag xPos   = new IntBag();
+		IntBag yPos   = new IntBag();
 		
-		if (energy > Constants.MAX_ENERGY) 
+		state.yard.getMooreLocations(x, x, 1, Grid2D.BOUNDED, false, xPos, yPos);
+		
+		for (int i = 0; i < xPos.size(); ++i)
 		{
-			energy = Constants.MAX_ENERGY;
+			int objX = xPos.get(i);
+			int objY = yPos.get(i);
+			
+			Bag bag = state.yard.getObjectsAtLocation(objX, objY);
+			
+			if (bag.numObjs == 1) 
+			{
+				for (Object obj : bag) 
+				{
+					if ( obj instanceof Food ) 
+					{
+						return (Food) obj;
+					}
+				}
+			}
 		}
 		
-		food.remove(beings);
-		
-		System.out.println("---> Ant[" + this.numero + "] Eat food \n");
+		return null;
 	}
+	
+	/**
+	 * Eat foods
+	 * @param food
+	 * @param amount
+	 */
+	private void eat(Food food, int amount) 
+	{
+		amount = food.consume(amount);
+
+		energy += (amount * Constants.FOOD_ENERGY);
+		
+		System.out.println("---> Ant[" + numero + "] eat " + amount + " food \n");
+	}
+	
+	/**
+	 * Eat load
+	 * @param amount
+	 */
+	private void eat(int amount) 
+	{
+		if (nbLoad < amount)
+		{
+			amount = nbLoad;
+		}
+		
+		nbLoad -= amount;
+		
+		energy += (amount * Constants.FOOD_ENERGY);
+		
+		System.out.println("---> Ant[" + numero + "] eat " + amount + " Load \n");
+	}
+	
+	
+	private int canEatFood()
+	{
+		return (Constants.MAX_ENERGY - energy) / Constants.FOOD_ENERGY;
+	}
+	
+	private void loadFood(Food food)
+	{
+		// try to load 1 unit of food at a time
+		int amount = food.consume(1);
+		
+		nbLoad += amount;
+				
+		System.out.println("---> Ant[" + numero + "] Load " + amount + " food \n");
+	}
+	
+	private void move(Int2D location, Beings beings)
+	{
+		x = beings.yard.stx(location.x);
+		y = beings.yard.sty(location.y);
+		
+		if (! beings.yard.setObjectLocation(this, x, y))
+		{
+			System.out.println("---> Ant[" + numero + "] fails to move.");
+			
+			return;
+		}
+		
+		System.out.println("---> Ant[" + numero + "] moves to (" + x + ", " + y + ").");
+	}
+	
+		
+/*	
+		
 
 	private void moveToFood(Int2D foodLoca, Beings beings) 
 	{
@@ -233,13 +323,6 @@ public class Ant implements Steppable {
 
 	
 
-	private void loadFood(Food food, Beings beings) 
-	{
-		System.out.println("---> Ant[" + numero + "] Load food \n");
-		
-		nbLoad++;
-		food.remove(beings);
-	}
 
 	
 	private Int2D getPosClosestFood(Int2D posAnt, SparseGrid2D yard) 
@@ -393,18 +476,6 @@ public class Ant implements Steppable {
 		changeLocation(tempx, tempy, beings);
 		
 		energy--;	
-	}
-	
-	private void changeLocation(int tempx, int tempy, Beings beings) 
-	{
-		beings.yard.stx(tempx);
-		beings.yard.sty(tempy);
-		beings.yard.setObjectLocation(this, tempx, tempy);
-		
-		this.x = tempx;
-		this.y = tempy;
-		
-		System.out.println("Ant["+ this.numero +"] Move to ["+ this.x + "," + this.y +"]");
 	}
 */	
 }

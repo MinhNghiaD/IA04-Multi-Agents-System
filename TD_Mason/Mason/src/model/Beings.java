@@ -36,7 +36,7 @@ public class Beings extends SimState
 		{
 			addFood();
 		}
-		
+	
 		numInsects = Constants.NUM_INSECT;
 	}
 

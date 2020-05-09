@@ -19,7 +19,7 @@ public class Food {
 		System.out.println("Food add at ["+ location.x + ", " +location.y +"]. Stock = " + amount);
 	}
 	
-	public int remove(int amount) 
+	public int consume(int amount) 
 	{	
 		if (amount >= this.amount)
 		{
