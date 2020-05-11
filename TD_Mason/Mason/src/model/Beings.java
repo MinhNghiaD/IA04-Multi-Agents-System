@@ -96,4 +96,12 @@ public class Beings extends SimState
 			finish();
 		}
 	}
+	
+	public int getNumInsects() {
+		return numInsects;
+	}
+
+	public void setNumInsects(int numInsects) {
+		this.numInsects = numInsects; 
+	}
 }
