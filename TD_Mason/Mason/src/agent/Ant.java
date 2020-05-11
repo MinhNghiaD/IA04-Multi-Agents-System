@@ -125,14 +125,15 @@ public class Ant implements Steppable {
 	
 	private int closestPoint(IntBag xPos, IntBag yPos)
 	{
-		int distance2 = (Constants.GRID_SIZE * 2);
+		double distance2 = (double) (Constants.GRID_SIZE * 2);
 		int index     = -1;
+		
 		
 		for (int i = 0; i < xPos.size(); ++i)
 		{
-			if ((xPos.get(i) - x) + (yPos.get(i) - y)  < distance2)
+			if (Math.sqrt((xPos.get(i)-x)*(xPos.get(i)-x) + (yPos.get(i)-y)*(yPos.get(i)-y))  < distance2)
 			{
-				distance2 = (xPos.get(i) - x) + (yPos.get(i) - y);
+				distance2 = (xPos.get(i)-x)*(xPos.get(i)-x) + (yPos.get(i)-y)*(yPos.get(i)-y);
 				index     = i;
 			}
 		}
@@ -218,14 +219,6 @@ public class Ant implements Steppable {
 				++i;
 			}
 		}
-/*	
-		System.out.println("Ant at [" + x + ", " + y + "] detects:");
-		
-		for (int i = 0; i < objects.size(); ++i)
-		{
-			System.out.println("objects at locations x = "+ xPos.get(i) + " y = " + yPos.get(i));
-		}
-*/
 		return objects;
 	}
 
